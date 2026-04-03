@@ -49,8 +49,6 @@
 	<string>$(WHOOP_CLIENT_SECRET)</string>
 	<key>WhoopRedirectURI</key>
 	<string>stridecheck://whoop-oauth</string>
-	<key>TrafficOverlayGeoJSONURL</key>
-	<string>$(TRAFFIC_OVERLAY_GEOJSON_URL)</string>
 	<key>StravaClientId</key>
 	<string>$(STRAVA_CLIENT_ID)</string>
 	<key>StravaClientSecret</key>
@@ -116,6 +114,15 @@
 				<false/>
 			</dict>
 			<key>strava.com</key>
+			<dict>
+				<key>NSIncludesSubdomains</key>
+				<true/>
+				<key>NSExceptionRequiresForwardSecrecy</key>
+				<false/>
+				<key>NSRequiresCertificateTransparency</key>
+				<false/>
+			</dict>
+			<key>arcgis.com</key>
 			<dict>
 				<key>NSIncludesSubdomains</key>
 				<true/>

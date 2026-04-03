@@ -35,6 +35,8 @@
 		AA0000000000000000000125 /* StravaOAuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000126 /* StravaOAuthService.swift */; };
 		AA0000000000000000000127 /* StravaAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000128 /* StravaAPIClient.swift */; };
 		AA0000000000000000000129 /* StravaLinkViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000012A /* StravaLinkViewModel.swift */; };
+		AA000000000000000000012B /* StateTrafficOverlayFeeds.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000012C /* StateTrafficOverlayFeeds.swift */; };
+		AA000000000000000000012D /* RouteTrafficMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000012E /* RouteTrafficMapView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -70,6 +72,8 @@
 		AA0000000000000000000126 /* StravaOAuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StravaOAuthService.swift; sourceTree = "<group>"; };
 		AA0000000000000000000128 /* StravaAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StravaAPIClient.swift; sourceTree = "<group>"; };
 		AA000000000000000000012A /* StravaLinkViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StravaLinkViewModel.swift; sourceTree = "<group>"; };
+		AA000000000000000000012C /* StateTrafficOverlayFeeds.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StateTrafficOverlayFeeds.swift; sourceTree = "<group>"; };
+		AA000000000000000000012E /* RouteTrafficMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteTrafficMapView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -107,6 +111,7 @@
 			children = (
 				AA0000000000000000000011 /* StrideCheckApp.swift */,
 				AA0000000000000000000012 /* ContentView.swift */,
+				AA000000000000000000012E /* RouteTrafficMapView.swift */,
 				AA0000000000000000000033 /* Services */,
 				AA0000000000000000000034 /* ViewModels */,
 				AA0000000000000000000018 /* Assets.xcassets */,
@@ -136,6 +141,7 @@
 				AA0000000000000000000104 /* SnapshotCache.swift */,
 				AA0000000000000000000105 /* RunWindowNotifier.swift */,
 				AA0000000000000000000106 /* State511Links.swift */,
+				AA000000000000000000012C /* StateTrafficOverlayFeeds.swift */,
 				AA0000000000000000000108 /* HealthKitReadinessFetcher.swift */,
 				AA000000000000000000010A /* OuraPersonalAPIClient.swift */,
 				AA000000000000000000010C /* WearableReadinessAggregator.swift */,
@@ -256,6 +262,8 @@
 				AA0000000000000000000125 /* StravaOAuthService.swift in Sources */,
 				AA0000000000000000000127 /* StravaAPIClient.swift in Sources */,
 				AA0000000000000000000129 /* StravaLinkViewModel.swift in Sources */,
+				AA000000000000000000012B /* StateTrafficOverlayFeeds.swift in Sources */,
+				AA000000000000000000012D /* RouteTrafficMapView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

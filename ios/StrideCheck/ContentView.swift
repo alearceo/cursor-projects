@@ -75,6 +75,10 @@ struct ContentView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color(uiColor: .systemGroupedBackground))
             .toolbar(.hidden, for: .navigationBar)
+            .overlay(alignment: .top) {
+                TopEdgeFrostFade(style: .groupedScroll)
+                    .ignoresSafeArea(edges: .top)
+            }
         }
     }
 
@@ -406,6 +410,57 @@ struct ContentView: View {
     }
 }
 
+// MARK: - Top edge fade (matches Route tab `ultraThinMaterial` footer)
+
+private enum TopEdgeFrostFadeStyle {
+    /// Scroll content under status bar: tint with grouped background then frosted mask.
+    case groupedScroll
+    /// Map under status bar: frost only (same material as `route511Card`).
+    case map
+}
+
+/// Gradient-style transition so content sliding under the status bar / Dynamic Island softens like the bottom sheet.
+private struct TopEdgeFrostFade: View {
+    var style: TopEdgeFrostFadeStyle
+
+    var body: some View {
+        GeometryReader { geo in
+            let fadeHeight = geo.safeAreaInsets.top + 36
+            VStack(spacing: 0) {
+                ZStack(alignment: .top) {
+                    if style == .groupedScroll {
+                        LinearGradient(
+                            colors: [
+                                Color(uiColor: .systemGroupedBackground),
+                                Color(uiColor: .systemGroupedBackground).opacity(0)
+                            ],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                        .frame(height: fadeHeight + 6)
+                    }
+
+                    Rectangle()
+                        .fill(.ultraThinMaterial)
+                        .frame(height: fadeHeight + 14)
+                        .mask(
+                            LinearGradient(
+                                colors: [.black, .black.opacity(0.35), .clear],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
+                }
+                .frame(height: fadeHeight + 14)
+
+                Spacer(minLength: 0)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        }
+        .allowsHitTesting(false)
+    }
+}
+
 // MARK: - Route / 511
 
 struct RouteAnd511View: View {
@@ -414,8 +469,11 @@ struct RouteAnd511View: View {
     let placeName: String?
 
     @StateObject private var stravaLink = StravaLinkViewModel()
-    @State private var position: MapCameraPosition = .automatic
-    @State private var trafficPolylines: [[CLLocationCoordinate2D]] = []
+    @State private var mapRegion = MKCoordinateRegion(
+        center: CLLocationCoordinate2D(latitude: 37.3349, longitude: -122.0090),
+        span: MKCoordinateSpan(latitudeDelta: 0.045, longitudeDelta: 0.045)
+    )
+    @State private var dotOverlayFeatures: [TrafficOverlayFeature] = []
     @State private var stravaPolylines: [[CLLocationCoordinate2D]] = []
     @State private var stravaFetchToken = 0
 
@@ -430,13 +488,17 @@ struct RouteAnd511View: View {
                 }
                 .background(Color(uiColor: .systemGroupedBackground))
                 .toolbar(.hidden, for: .navigationBar)
+                .overlay(alignment: .top) {
+                    TopEdgeFrostFade(style: .map)
+                        .ignoresSafeArea(edges: .top)
+                }
         }
         .onAppear {
             recenterMap()
             stravaLink.refreshConnectionState()
         }
         .onChange(of: coordinateKey) { _, _ in recenterMap() }
-        .task(id: overlayTaskKey) { await loadTrafficOverlay() }
+        .task(id: overlayTaskKey) { await loadStateAgencyOverlay() }
         .task(id: stravaTaskKey) { await loadStravaRoutes() }
     }
 
@@ -445,15 +507,19 @@ struct RouteAnd511View: View {
     }
 
     private var overlayTaskKey: String {
-        "\(coordinateKey)|\(stateAbbrev ?? "")|\(StrideCheckSecrets.trafficOverlayGeoJSONURL?.absoluteString ?? "")"
+        "\(coordinateKey)|\(stateAbbrev ?? "")"
     }
 
-    private func loadTrafficOverlay() async {
-        guard let url = StrideCheckSecrets.trafficOverlayGeoJSONURL else {
-            trafficPolylines = []
+    private func loadStateAgencyOverlay() async {
+        guard let c = coordinate else {
+            dotOverlayFeatures = []
             return
         }
-        trafficPolylines = await TrafficOverlayLoader.loadPolylines(from: url)
+        guard let url = StateTrafficOverlayFeeds.geojsonQueryURL(forStateAbbrev: stateAbbrev, around: c) else {
+            dotOverlayFeatures = []
+            return
+        }
+        dotOverlayFeatures = await TrafficOverlayLoader.loadFeatures(from: url)
     }
 
     private func loadStravaRoutes() async {
@@ -551,11 +617,16 @@ struct RouteAnd511View: View {
 
     private var overlayCaption: String {
         var parts: [String] = []
-        parts.append("Official state 511 and DOT maps show closures, incidents, and construction.")
-        if trafficPolylines.isEmpty {
-            parts.append("Optional orange GeoJSON overlays use TrafficOverlayGeoJSONURL when configured (see README).")
+        parts.append("Apple Maps traffic colors show live congestion on the map (where available).")
+        parts.append("Official state 511 remains authoritative for closures and incidents.")
+        if StateTrafficOverlayFeeds.hasRegisteredFeed(forStateAbbrev: stateAbbrev) {
+            if dotOverlayFeatures.isEmpty {
+                parts.append("Orange markers or lines are agency data for this state when the feed returns geometry in view.")
+            } else {
+                parts.append("Orange markers/lines are from the registered state DOT layer (informational only).")
+            }
         } else {
-            parts.append("Orange lines are from your GeoJSON overlay (informational only).")
+            parts.append("No in-app DOT geometry feed is registered for this state yet; use Open 511 below.")
         }
         if stravaLink.isConnected, !stravaPolylines.isEmpty {
             parts.append("Purple lines are from Strava.")
@@ -571,20 +642,13 @@ struct RouteAnd511View: View {
     @ViewBuilder
     private var mapLayer: some View {
         if let c = coordinate {
-            Map(position: $position) {
-                Marker("StrideCheck area", coordinate: c)
-                    .tint(.teal)
-                ForEach(Array(trafficPolylines.enumerated()), id: \.offset) { _, coords in
-                    MapPolyline(coordinates: coords)
-                        .stroke(Color.orange.opacity(0.78), lineWidth: 3)
-                }
-                ForEach(Array(stravaPolylines.enumerated()), id: \.offset) { _, coords in
-                    MapPolyline(coordinates: coords)
-                        .stroke(Color.purple.opacity(0.85), lineWidth: 3)
-                }
-            }
-            // Flat standard style avoids extra Metal/terrain work that can spam Simulator logs (0×0 drawable, clip warnings).
-            .mapStyle(.standard(elevation: .flat))
+            RouteTrafficMapView(
+                region: mapRegion,
+                centerPin: c,
+                centerTitle: "StrideCheck area",
+                dotFeatures: dotOverlayFeatures,
+                stravaPolylines: stravaPolylines
+            )
         } else {
             ZStack {
                 Color(uiColor: .systemGroupedBackground)
@@ -599,9 +663,7 @@ struct RouteAnd511View: View {
 
     private func recenterMap() {
         guard let c = coordinate else { return }
-        position = .region(
-            MKCoordinateRegion(center: c, latitudinalMeters: 4500, longitudinalMeters: 4500)
-        )
+        mapRegion = MKCoordinateRegion(center: c, latitudinalMeters: 4500, longitudinalMeters: 4500)
     }
 }
 

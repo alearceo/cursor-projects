@@ -26,13 +26,6 @@ enum StrideCheckSecrets {
             .flatMap(trimmed) ?? "stridecheck://whoop-oauth"
     }
 
-    static var trafficOverlayGeoJSONURL: URL? {
-        guard let s = trimmed(Bundle.main.object(forInfoDictionaryKey: "TrafficOverlayGeoJSONURL") as? String),
-              !s.hasPrefix("$("),
-              let u = URL(string: s), u.scheme == "https" || u.scheme == "http" else { return nil }
-        return u
-    }
-
     static var stravaClientId: String? {
         trimmed(Bundle.main.object(forInfoDictionaryKey: "StravaClientId") as? String)
     }

@@ -6,14 +6,14 @@ Native SwiftUI app for runner-focused conditions: weather, air quality, NWS aler
 
 | Area | Files |
 |------|--------|
-| App | `StrideCheckApp.swift`, `ContentView.swift`, `LaunchScreen.storyboard` (full-screen launch; avoids letterboxing on modern iPhones) |
+| App | `StrideCheckApp.swift`, `ContentView.swift`, `RouteTrafficMapView.swift` (MapKit traffic + overlays), `LaunchScreen.storyboard` (full-screen launch; avoids letterboxing on modern iPhones) |
 | State | `ViewModels/ConditionsViewModel.swift` |
 | Location | `Services/LocationService.swift` |
 | Conditions & scoring | `Services/ConditionsService.swift`, `Services/APIModels.swift` |
 | Networking / TLS | `Services/StrideCheckHTTPSession.swift` |
 | Offline | `Services/SnapshotCache.swift` |
 | Alerts | `Services/RunWindowNotifier.swift` |
-| Map / traffic | `Services/State511Links.swift` (state 511 URLs), `Services/TrafficOverlayLoader.swift` (optional GeoJSON line overlays), `Services/StravaAPIClient.swift`, `Services/StravaOAuthService.swift`, `Services/EncodedPolylineDecoder.swift`, `ViewModels/StravaLinkViewModel.swift` (optional Strava route overlays) |
+| Map / traffic | `Services/State511Links.swift` (511 portal URLs), `Services/StateTrafficOverlayFeeds.swift` (curated per-state DOT ArcGIS GeoJSON queries), `Services/TrafficOverlayLoader.swift` (GeoJSON → points/polylines), `Services/StravaAPIClient.swift`, `Services/StravaOAuthService.swift`, `Services/EncodedPolylineDecoder.swift`, `ViewModels/StravaLinkViewModel.swift` (Strava route overlays) |
 | Wearables | `Services/HealthKitReadinessFetcher.swift`, `Services/OuraPersonalAPIClient.swift`, `Services/WhoopAPIClient.swift`, `Services/WhoopOAuthService.swift`, `Services/WearableReadinessAggregator.swift` |
 | Secrets | `Services/StrideCheckSecrets.swift`, `Services/KeychainCredentialStore.swift`, `StrideCheck/BuildConfig.xcconfig`, `Config/Secrets.xcconfig.template` |
 | Crime (optional) | `Services/CrimeIncidentsService.swift` |
@@ -41,8 +41,9 @@ The **StrideCheck** target’s base configuration is `StrideCheck/BuildConfig.xc
 | `OURA_PERSONAL_ACCESS_TOKEN` | `OuraPersonalAccessToken` | **Keychain** wins if a value is stored (generic password service `com.alearceo.StrideCheck.credentials`, account `oura.pat`); otherwise plist from build. |
 | `CRIMEOMETER_API_KEY` | `CrimeometerAPIKey` | Same Keychain service; account `crimeometer.key` overrides plist. |
 | `WHOOP_CLIENT_ID` / `WHOOP_CLIENT_SECRET` | `WhoopClientId` / `WhoopClientSecret` | Used only for OAuth; **not** stored in Keychain as long-term secrets beyond the OAuth exchange. |
-| `TRAFFIC_OVERLAY_GEOJSON_URL` | `TrafficOverlayGeoJSONURL` | HTTPS URL to a **GeoJSON** `FeatureCollection` (or nested features) with `LineString` / `MultiLineString` geometry. Drawn in orange on the Route & 511 map. Empty = no overlay. |
 | `STRAVA_CLIENT_ID` / `STRAVA_CLIENT_SECRET` | `StravaClientId` / `StravaClientSecret` | Used for **Strava OAuth** on the Route & 511 tab only. Redirect URI **`stridecheck://strava-oauth`** must be registered in [Strava API settings](https://www.strava.com/settings/api); override with `StravaRedirectURI` in `Info.plist` if you use a custom scheme. Default scopes: `read`, `activity:read`. For **private** activities, change the scope string in `StravaOAuthService.swift` to include `activity:read_all` and re-authorize. |
+
+**Deprecated (removed):** `TrafficOverlayGeoJSONURL` / `TRAFFIC_OVERLAY_GEOJSON_URL` — the app no longer reads a custom GeoJSON URL from plist. Use **Apple Maps traffic** on the Route tab plus **per-state feeds** in `StateTrafficOverlayFeeds.swift` (Option C), or open the official 511 link.
 
 **Whoop OAuth:** Register the app at [WHOOP Developer](https://developer.whoop.com). Add redirect URI **`stridecheck://whoop-oauth`** (or set `WhoopRedirectURI` in `Info.plist` to match your custom scheme). Request scopes your product needs (e.g. recovery, cycles, sleep). After sign-in, **access and refresh tokens** are stored in the **Keychain**. The aggregator prefers **Whoop API** data when a valid access token exists; otherwise Oura PAT, then HealthKit.
 
@@ -62,7 +63,6 @@ OURA_PERSONAL_ACCESS_TOKEN = ${OURA_PAT:-}
 CRIMEOMETER_API_KEY = ${CRIMEOMETER_KEY:-}
 WHOOP_CLIENT_ID = ${WHOOP_CLIENT_ID:-}
 WHOOP_CLIENT_SECRET = ${WHOOP_CLIENT_SECRET:-}
-TRAFFIC_OVERLAY_GEOJSON_URL = ${TRAFFIC_GEOJSON_URL:-}
 STRAVA_CLIENT_ID = ${STRAVA_CLIENT_ID:-}
 STRAVA_CLIENT_SECRET = ${STRAVA_CLIENT_SECRET:-}
 EOF
@@ -89,15 +89,16 @@ Use your CI system’s **secret store** for those environment variables; keep `S
 
 ### Route & 511 tab
 
+- Map uses **`MKMapView` with `showsTraffic`** so **Apple’s live traffic** colors appear where MapKit provides them (Option A).
 - Map centered on the last conditions coordinate; link to **state 511** (or FHWA directory fallback).
-- Optional **GeoJSON** polylines (closures, custom DOT feeds, etc.) when `TrafficOverlayGeoJSONURL` resolves to a valid HTTPS URL; see `TrafficOverlayLoader.swift`.
-- Optional **Strava**: connect on this tab to overlay **purple** polylines for recent runs/walks (summary geometry from the Strava API). Orange remains the GeoJSON traffic overlay; teal marker is the conditions location.
+- **State DOT geometry (Option C):** for selected states, the app requests **GeoJSON** from curated **ArcGIS FeatureServer** layers (`StateTrafficOverlayFeeds.swift`) using a bbox around your map center. Results render as **orange** polylines and **orange** incident-style markers. Feeds break or move; extend the registry as needed. States without a registry entry rely on traffic + 511 only.
+- Optional **Strava**: connect on this tab to overlay **purple** polylines for recent runs/walks. **Teal** marker is the conditions location.
 
 ## Corporate proxy (Zscaler / SSL inspection)
 
 If you see `ATS failed system trust`, `TLS Trust evaluation failed (-9802)`, or `NSURLErrorDomain Code=-1200` for API hosts, the network may be **SSL-inspecting** HTTPS.
 
-**In-app mitigation:** `Info.plist` adds **ATS exceptions** (CT + forward-secrecy relaxed) for the API domains in use, including `open-meteo.com`, `weather.gov`, `zippopotam.us`, **`crimeometer.com`**, **`ouraring.com`**, **`strava.com`**, and **`whoop.com`** (subdomains where applicable). `StrideCheckHTTPSession` supplies `URLCredential(trust:)` for an internal **host allowlist** only.
+**In-app mitigation:** `Info.plist` adds **ATS exceptions** (CT + forward-secrecy relaxed) for the API domains in use, including `open-meteo.com`, `weather.gov`, `zippopotam.us`, **`crimeometer.com`**, **`ouraring.com`**, **`strava.com`**, **`whoop.com`**, and **`arcgis.com`** (subdomains where applicable). `StrideCheckHTTPSession` supplies `URLCredential(trust:)` for an internal **host allowlist** (including `*.arcgis.com` and common `*.dot.gov` GIS hosts used by state overlays).
 
 **Still failing?** Trust your org’s inspection root on the device/Simulator, or ask IT to bypass inspection for the hostnames the app calls.
 
@@ -118,7 +119,7 @@ These often appear when using the **Simulator**, **MapKit**, or **debugging**; t
 - **`Failed to locate resource named "default.csv"`** / **`fopen failed for data file`** / **`Errors found! Invalidating cache`** — Geo/Map-related caches on Simulator; usually self-healing.
 - **`unable to make sandbox extension: Operation not permitted`** — Simulator file/sandbox limitation.
 
-The Route tab uses a **full-area map** with **flat** standard map style and a **bottom safe-area inset** for the 511 card to avoid laying out `Map` at **0×0** (which caused `CAMetalLayer ignoring invalid setDrawableSize` and `clip: empty path` in some layouts). If those Metal messages still appear briefly when switching tabs, they are often benign MapKit timing on Simulator.
+The Route tab uses a **full-area `MKMapView`** (via `RouteTrafficMapView`) with **traffic enabled**, standard map type, POIs filtered out, and a **bottom safe-area inset** for the 511 card. Brief MapKit / Metal messages on Simulator tab switches are often benign.
 
 ## API / data notes
 
@@ -129,6 +130,7 @@ The Route tab uses a **full-area map** with **flat** standard map style and a **
 - **Oura** — field names follow v2 `usercollection` JSON; if Oura changes schemas, update `OuraPersonalAPIClient.swift`.
 - **Whoop** — v2 developer API (`api.prod.whoop.com`); see `WhoopAPIClient.swift` if field names change.
 - **Strava** — v3 endpoints (`www.strava.com/api/v3`); activity list and `map.summary_polyline` fields; see `StravaAPIClient.swift` and [Strava’s docs](https://developers.strava.com/docs/reference/).
+- **State DOT overlays** — ArcGIS `FeatureServer/.../query?f=geojson` with an envelope around the map center; layer URLs live in `StateTrafficOverlayFeeds.swift` and must be maintained when agencies change services.
 
 ## Research: alternatives to Crimeometer (no code in this repo)
 
