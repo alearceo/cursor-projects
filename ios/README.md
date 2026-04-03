@@ -11,17 +11,13 @@ This folder contains a native SwiftUI implementation scaffold for the runner con
 - `Services/ConditionsService.swift`: Open-Meteo, Zippopotam, NWS requests + scoring.
 - `Services/APIModels.swift`: API decoding models and display DTOs.
 
-## Xcode setup
+## Open and run
 
-1. Create a new iOS app project in Xcode named `StrideCheck` (SwiftUI, Swift, iOS 17+).
-2. Copy the files from `ios/StrideCheck` into your Xcode project (replace template files).
-3. Enable **Location Updates** capability if needed later (not required for one-shot location requests).
-4. Add this key in your target `Info.plist`:
+1. Open `ios/StrideCheck.xcodeproj` in Xcode.
+2. Select the `StrideCheck` scheme and an iPhone simulator/device.
+3. Build and run.
 
-```xml
-<key>NSLocationWhenInUseUsageDescription</key>
-<string>StrideCheck uses your location to detect local running conditions automatically.</string>
-```
+The project already includes `NSLocationWhenInUseUsageDescription` in `StrideCheck/Info.plist`.
 
 ## Product behavior
 
