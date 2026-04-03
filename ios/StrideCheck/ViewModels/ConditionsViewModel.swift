@@ -40,10 +40,19 @@ final class ConditionsViewModel: ObservableObject {
             SnapshotCache.save(next)
             await RunWindowNotifier.considerNotifyIfStrongRun(score: next.score)
         } catch {
+            guard !isBenignCancellation(error) else { return }
             errorMessage = error.localizedDescription
             if snapshot == nil {
                 snapshot = SnapshotCache.load()
             }
         }
+    }
+
+    /// Pull-to-refresh and overlapping loads cancel the previous task; that must not surface as a user-visible error.
+    private func isBenignCancellation(_ error: Error) -> Bool {
+        if error is CancellationError { return true }
+        if let url = error as? URLError, url.code == .cancelled { return true }
+        let ns = error as NSError
+        return ns.domain == NSURLErrorDomain && ns.code == NSURLErrorCancelled
     }
 }
