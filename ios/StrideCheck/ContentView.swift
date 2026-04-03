@@ -372,37 +372,44 @@ struct RouteAnd511View: View {
 
     var body: some View {
         NavigationStack {
-            ZStack(alignment: .bottom) {
-                mapLayer
-                    .ignoresSafeArea(edges: [.horizontal, .bottom])
-
-                VStack(alignment: .leading, spacing: 12) {
-                    if let placeName {
-                        Text(placeName)
-                            .font(.headline)
-                    }
-                    Text("Official state 511 and DOT maps show closures, incidents, and construction. StrideCheck does not draw live 511 geometry yet — open your state link for full layers.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    Link(destination: State511Links.url(forStateAbbrev: stateAbbrev)) {
-                        Label(
-                            stateAbbrev != nil ? "Open state 511 / traveler map" : "Open 511 directory",
-                            systemImage: "safari.fill"
-                        )
-                        .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(.borderedProminent)
+            mapLayer
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .frame(minWidth: 1, minHeight: 1)
+                .ignoresSafeArea(edges: [.horizontal, .bottom])
+                .safeAreaInset(edge: .bottom, spacing: 0) {
+                    route511Card
                 }
-                .padding(16)
-                .background(.ultraThinMaterial)
-                .clipShape(RoundedRectangle(cornerRadius: 16))
-                .padding(16)
-            }
-            .background(Color(uiColor: .systemGroupedBackground))
-            .toolbar(.hidden, for: .navigationBar)
+                .background(Color(uiColor: .systemGroupedBackground))
+                .toolbar(.hidden, for: .navigationBar)
         }
         .onAppear { recenterMap() }
         .onChange(of: coordinateKey) { _, _ in recenterMap() }
+    }
+
+    private var route511Card: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            if let placeName {
+                Text(placeName)
+                    .font(.headline)
+            }
+            Text("Official state 511 and DOT maps show closures, incidents, and construction. StrideCheck does not draw live 511 geometry yet — open your state link for full layers.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            Link(destination: State511Links.url(forStateAbbrev: stateAbbrev)) {
+                Label(
+                    stateAbbrev != nil ? "Open state 511 / traveler map" : "Open 511 directory",
+                    systemImage: "safari.fill"
+                )
+                .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.ultraThinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .padding(.horizontal, 16)
+        .padding(.bottom, 8)
     }
 
     private var coordinateKey: String {
@@ -417,7 +424,8 @@ struct RouteAnd511View: View {
                 Marker("StrideCheck area", coordinate: c)
                     .tint(.teal)
             }
-            .mapStyle(.standard(elevation: .realistic))
+            // Flat standard style avoids extra Metal/terrain work that can spam Simulator logs (0×0 drawable, clip warnings).
+            .mapStyle(.standard(elevation: .flat))
         } else {
             ZStack {
                 Color(uiColor: .systemGroupedBackground)

@@ -71,6 +71,19 @@ If you see `ATS failed system trust`, `TLS Trust evaluation failed (-9802)`, or 
 - `Gesture: System gesture gate timed out` / `Result accumulator timeout` — common Simulator / keyboard timing.
 - `Unable to simultaneously satisfy constraints` on `_UIRemoteKeyboardPlaceholderView` — keyboard layout quirk; `scrollDismissesKeyboard` reduces frequency.
 
+### Simulator / system services (not app bugs)
+
+These often appear when using the **Simulator**, **MapKit**, or **debugging**; they reflect sandboxed daemons and entitlements your app does not (and should not) have:
+
+- **`usermanagerd` / `personaAttributesForPersonaType` / (501) Invalidation handler** — user-persona XPC; Simulator noise.
+- **`RBSServiceErrorDomain` / `Client not entitled` / `com.apple.runningboard.process-state` / `elapsedCPUTimeForFrontBoard`** — RunningBoard; common when the debugger or Simulator asks for process state your app is not entitled to.
+- **`PerfPowerTelemetryClientRegistrationService` / Sandbox restriction (159)** — power/performance telemetry; blocked in the Simulator sandbox.
+- **`PPSClientDonation` / `Maps / SpringfieldUsage` / `Permission denied`** — MapKit internal metrics donation; Simulator often denies it.
+- **`Failed to locate resource named "default.csv"`** / **`fopen failed for data file`** / **`Errors found! Invalidating cache`** — Geo/Map-related caches on Simulator; usually self-healing.
+- **`unable to make sandbox extension: Operation not permitted`** — Simulator file/sandbox limitation.
+
+The Route tab uses a **full-area map** with **flat** standard map style and a **bottom safe-area inset** for the 511 card to avoid laying out `Map` at **0×0** (which caused `CAMetalLayer ignoring invalid setDrawableSize` and `clip: empty path` in some layouts). If those Metal messages still appear briefly when switching tabs, they are often benign MapKit timing on Simulator.
+
 ## API / data notes
 
 - **Open-Meteo** — forecast, `is_day`, optional daily sunrise/sunset fields.
