@@ -1,5 +1,6 @@
 import CoreLocation
 import SwiftUI
+import Combine
 
 struct ContentView: View {
     @StateObject private var vm = ConditionsViewModel()
@@ -29,11 +30,8 @@ struct ContentView: View {
         .task {
             locationService.requestAccessAndLocation()
         }
-        .onChange(of: locationService.coordinate) { _, newValue in
-            guard let coordinate = newValue else { return }
-            Task {
-                await vm.loadForCurrentLocation(coordinate)
-            }
+        .onReceive(locationService.$coordinate.compactMap { $0 }) { coordinate in
+            Task { await vm.loadForCurrentLocation(coordinate) }
         }
     }
 

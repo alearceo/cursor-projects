@@ -32,7 +32,7 @@ final class LocationService: NSObject, ObservableObject {
     }
 }
 
-extension LocationService: CLLocationManagerDelegate {
+extension LocationService: @MainActor CLLocationManagerDelegate {
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         let status = manager.authorizationStatus
         Task { @MainActor in
