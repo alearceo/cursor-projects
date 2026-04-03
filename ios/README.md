@@ -6,7 +6,7 @@ Native SwiftUI app for runner-focused conditions: weather, air quality, NWS aler
 
 | Area | Files |
 |------|--------|
-| App | `StrideCheckApp.swift`, `ContentView.swift` |
+| App | `StrideCheckApp.swift`, `ContentView.swift`, `LaunchScreen.storyboard` (full-screen launch; avoids letterboxing on modern iPhones) |
 | State | `ViewModels/ConditionsViewModel.swift` |
 | Location | `Services/LocationService.swift` |
 | Conditions & scoring | `Services/ConditionsService.swift`, `Services/APIModels.swift` |

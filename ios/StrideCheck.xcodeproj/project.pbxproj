@@ -14,6 +14,7 @@
 		AA0000000000000000000005 /* LocationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000015 /* LocationService.swift */; };
 		AA0000000000000000000006 /* ConditionsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000016 /* ConditionsViewModel.swift */; };
 		AA0000000000000000000007 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000018 /* Assets.xcassets */; };
+		AA0000000000000000000112 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000113 /* LaunchScreen.storyboard */; };
 		AA0000000000000000000008 /* StrideCheckHTTPSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000019 /* StrideCheckHTTPSession.swift */; };
 		AA0000000000000000000101 /* SnapshotCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000104 /* SnapshotCache.swift */; };
 		AA0000000000000000000102 /* RunWindowNotifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000105 /* RunWindowNotifier.swift */; };
@@ -45,6 +46,7 @@
 		AA000000000000000000010E /* CrimeIncidentsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrimeIncidentsService.swift; sourceTree = "<group>"; };
 		AA0000000000000000000110 /* HealthKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = HealthKit.framework; path = System/Library/Frameworks/HealthKit.framework; sourceTree = SDKROOT; };
 		AA0000000000000000000111 /* StrideCheck.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = StrideCheck.entitlements; sourceTree = "<group>"; };
+		AA0000000000000000000113 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -84,6 +86,7 @@
 				AA0000000000000000000033 /* Services */,
 				AA0000000000000000000034 /* ViewModels */,
 				AA0000000000000000000018 /* Assets.xcassets */,
+				AA0000000000000000000113 /* LaunchScreen.storyboard */,
 				AA0000000000000000000017 /* Info.plist */,
 				AA0000000000000000000111 /* StrideCheck.entitlements */,
 			);
@@ -183,6 +186,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				AA0000000000000000000007 /* Assets.xcassets in Resources */,
+				AA0000000000000000000112 /* LaunchScreen.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
