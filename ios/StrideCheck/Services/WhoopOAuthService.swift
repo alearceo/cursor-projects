@@ -15,7 +15,7 @@ enum WhoopError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .missingClientCredentials:
-            return "Add WhoopClientId and WhoopClientSecret (xcconfig or Info.plist) from developer.whoop.com."
+            return "Add Whoop Client ID and secret in Data sources (Keychain) or in your build’s Info.plist / xcconfig from developer.whoop.com."
         case .startFailed: return "Could not start Whoop sign-in."
         case .noCallback: return "Whoop sign-in did not return a callback URL."
         case .badRedirect: return "Unexpected redirect URL from Whoop."

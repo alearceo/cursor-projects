@@ -7,6 +7,7 @@ struct ContentView: View {
     @StateObject private var vm = ConditionsViewModel()
     @StateObject private var locationService = LocationService()
     @StateObject private var whoopLink = WhoopLinkViewModel()
+    @StateObject private var stravaLink = StravaLinkViewModel()
     @AppStorage("stridecheck.notifyRunWindows") private var notifyStrongWindows = false
     @State private var selectedTab = 0
 
@@ -25,10 +26,12 @@ struct ContentView: View {
             .tag(1)
         }
         .environmentObject(whoopLink)
+        .environmentObject(stravaLink)
         .tint(.teal)
         .task {
             locationService.requestAccessAndLocation()
             whoopLink.refreshConnectionState()
+            stravaLink.refreshConnectionState()
         }
         .onReceive(locationService.$coordinate.compactMap { $0 }) { coordinate in
             Task { await vm.loadForCurrentLocation(coordinate) }
@@ -440,12 +443,15 @@ private enum TopEdgeFrostFadeStyle {
 }
 
 /// Gradient-style transition so content sliding under the status bar / Dynamic Island softens like the bottom sheet.
+/// Vertical extent is tuned to approximate the Route tab bottom `ultraThinMaterial` card so status-bar chrome stays readable.
 private struct TopEdgeFrostFade: View {
     var style: TopEdgeFrostFadeStyle
 
     var body: some View {
         GeometryReader { geo in
-            let fadeHeight = geo.safeAreaInsets.top + 36
+            let fadeHeight = geo.safeAreaInsets.top + 56
+            let materialTail: CGFloat = 40
+            let groupedTintTail: CGFloat = 18
             VStack(spacing: 0) {
                 ZStack(alignment: .top) {
                     if style == .groupedScroll {
@@ -457,21 +463,21 @@ private struct TopEdgeFrostFade: View {
                             startPoint: .top,
                             endPoint: .bottom
                         )
-                        .frame(height: fadeHeight + 6)
+                        .frame(height: fadeHeight + groupedTintTail)
                     }
 
                     Rectangle()
                         .fill(.ultraThinMaterial)
-                        .frame(height: fadeHeight + 14)
+                        .frame(height: fadeHeight + materialTail)
                         .mask(
                             LinearGradient(
-                                colors: [.black, .black.opacity(0.35), .clear],
+                                colors: [.black, .black.opacity(0.92), .black.opacity(0.4), .clear],
                                 startPoint: .top,
                                 endPoint: .bottom
                             )
                         )
                 }
-                .frame(height: fadeHeight + 14)
+                .frame(height: fadeHeight + materialTail)
 
                 Spacer(minLength: 0)
             }
@@ -488,14 +494,14 @@ struct RouteAnd511View: View {
     let stateAbbrev: String?
     let placeName: String?
 
-    @StateObject private var stravaLink = StravaLinkViewModel()
+    @EnvironmentObject private var stravaLink: StravaLinkViewModel
+    @AppStorage(StravaMapOverlayPreferences.showRoutesOnMapKey) private var showStravaRoutesOnMap = false
     @State private var mapRegion = MKCoordinateRegion(
         center: CLLocationCoordinate2D(latitude: 37.3349, longitude: -122.0090),
         span: MKCoordinateSpan(latitudeDelta: 0.045, longitudeDelta: 0.045)
     )
     @State private var dotOverlayFeatures: [TrafficOverlayFeature] = []
     @State private var stravaPolylines: [[CLLocationCoordinate2D]] = []
-    @State private var stravaFetchToken = 0
 
     var body: some View {
         NavigationStack {
@@ -523,7 +529,7 @@ struct RouteAnd511View: View {
     }
 
     private var stravaTaskKey: String {
-        "\(stravaLink.isConnected)|\(stravaFetchToken)"
+        "\(stravaLink.isConnected)|\(showStravaRoutesOnMap)|\(stravaLink.mapDataRefreshGeneration)"
     }
 
     private var overlayTaskKey: String {
@@ -543,7 +549,7 @@ struct RouteAnd511View: View {
     }
 
     private func loadStravaRoutes() async {
-        guard stravaLink.isConnected else {
+        guard stravaLink.isConnected, showStravaRoutesOnMap else {
             stravaPolylines = []
             return
         }
@@ -582,49 +588,38 @@ struct RouteAnd511View: View {
     }
 
     private var stravaCard: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Strava routes")
-                .font(.subheadline.weight(.semibold))
-            Text("Sign in to draw recent runs and walks on the map (summary polylines). Create an app at Strava API settings and add redirect `stridecheck://strava-oauth`; set `STRAVA_CLIENT_ID` / `STRAVA_CLIENT_SECRET` in xcconfig (see README).")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-            if let err = stravaLink.lastError {
-                Text(err)
-                    .font(.caption2)
-                    .foregroundStyle(.red)
-            }
-            HStack(spacing: 10) {
-                if stravaLink.isConnected {
-                    Button("Disconnect") {
-                        stravaLink.disconnect()
-                        stravaPolylines = []
-                        stravaFetchToken += 1
+        VStack(alignment: .leading, spacing: 10) {
+            NavigationLink {
+                MapDataSourcesView()
+            } label: {
+                HStack(alignment: .center, spacing: 12) {
+                    Image(systemName: "map.fill")
+                        .font(.title3)
+                        .foregroundStyle(.orange)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Map data sources")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.primary)
+                        Text(stravaCardSubtitle)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
                     }
-                    .buttonStyle(.bordered)
-                    Button("Refresh routes") {
-                        stravaFetchToken += 1
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .tint(.orange)
-                } else {
-                    Button {
-                        Task { await stravaLink.connect() }
-                    } label: {
-                        if stravaLink.isBusy {
-                            ProgressView()
-                                .frame(maxWidth: .infinity)
-                        } else {
-                            Text("Connect Strava")
-                                .frame(maxWidth: .infinity)
-                        }
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .tint(.orange)
-                    .disabled(stravaLink.isBusy)
+                    Spacer(minLength: 0)
+                    Image(systemName: "chevron.right")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.tertiary)
                 }
             }
-            if stravaLink.isConnected {
-                Text(stravaPolylines.isEmpty ? "No run polylines returned yet — try Refresh, or check that recent Strava activities include GPS." : "Purple lines are your recent Strava activities (not navigation routes).")
+            .buttonStyle(.plain)
+            if showStravaRoutesOnMap, stravaLink.isConnected {
+                HStack(spacing: 10) {
+                    Button("Refresh routes") {
+                        stravaLink.requestMapDataRefresh()
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(.orange)
+                }
+                Text(stravaPolylines.isEmpty ? "No polylines yet — try Refresh, or check that recent activities include GPS." : "Purple lines are recent Strava activities (not navigation routes).")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
             }
@@ -633,6 +628,16 @@ struct RouteAnd511View: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color(uiColor: .tertiarySystemGroupedBackground))
         .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    private var stravaCardSubtitle: String {
+        if stravaLink.isConnected, showStravaRoutesOnMap {
+            return "Strava on — routes shown when available."
+        }
+        if stravaLink.isConnected {
+            return "Strava signed in — turn on “Show routes” in Map data sources to draw on the map."
+        }
+        return "Strava, Client ID/secret, and map overlay settings."
     }
 
     private var overlayCaption: String {
@@ -648,7 +653,7 @@ struct RouteAnd511View: View {
         } else {
             parts.append("No in-app DOT geometry feed is registered for this state yet; use Open 511 below.")
         }
-        if stravaLink.isConnected, !stravaPolylines.isEmpty {
+        if showStravaRoutesOnMap, stravaLink.isConnected, !stravaPolylines.isEmpty {
             parts.append("Purple lines are from Strava.")
         }
         return parts.joined(separator: " ")

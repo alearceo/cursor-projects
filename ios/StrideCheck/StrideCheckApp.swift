@@ -5,6 +5,7 @@ import UIKit
 struct StrideCheckApp: App {
     init() {
         WearableRunIndexPreferences.applyMigrationIfNeeded()
+        StravaMapOverlayPreferences.applyMigrationIfNeeded()
     }
 
     var body: some Scene {

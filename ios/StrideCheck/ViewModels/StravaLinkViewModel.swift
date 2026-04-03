@@ -5,6 +5,8 @@ final class StravaLinkViewModel: ObservableObject {
     @Published private(set) var isConnected = false
     @Published var isBusy = false
     @Published var lastError: String?
+    /// Bumps when the user requests a fresh polyline fetch (Route tab or Map data sources).
+    @Published private(set) var mapDataRefreshGeneration = 0
 
     func refreshConnectionState() {
         isConnected = KeychainCredentialStore.string(for: .stravaAccessToken) != nil
@@ -26,5 +28,9 @@ final class StravaLinkViewModel: ObservableObject {
         StravaOAuthService.disconnect()
         isConnected = false
         lastError = nil
+    }
+
+    func requestMapDataRefresh() {
+        mapDataRefreshGeneration += 1
     }
 }

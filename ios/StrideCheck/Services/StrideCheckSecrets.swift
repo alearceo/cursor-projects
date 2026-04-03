@@ -13,11 +13,13 @@ enum StrideCheckSecrets {
     }
 
     static var whoopClientId: String? {
-        trimmed(Bundle.main.object(forInfoDictionaryKey: "WhoopClientId") as? String)
+        trimmed(KeychainCredentialStore.string(for: .whoopOAuthClientId))
+            ?? trimmed(Bundle.main.object(forInfoDictionaryKey: "WhoopClientId") as? String)
     }
 
     static var whoopClientSecret: String? {
-        trimmed(Bundle.main.object(forInfoDictionaryKey: "WhoopClientSecret") as? String)
+        trimmed(KeychainCredentialStore.string(for: .whoopOAuthClientSecret))
+            ?? trimmed(Bundle.main.object(forInfoDictionaryKey: "WhoopClientSecret") as? String)
     }
 
     /// Must match Whoop Developer Dashboard and `CFBundleURLTypes` (e.g. `stridecheck://whoop-oauth`).
@@ -27,11 +29,13 @@ enum StrideCheckSecrets {
     }
 
     static var stravaClientId: String? {
-        trimmed(Bundle.main.object(forInfoDictionaryKey: "StravaClientId") as? String)
+        trimmed(KeychainCredentialStore.string(for: .stravaOAuthClientId))
+            ?? trimmed(Bundle.main.object(forInfoDictionaryKey: "StravaClientId") as? String)
     }
 
     static var stravaClientSecret: String? {
-        trimmed(Bundle.main.object(forInfoDictionaryKey: "StravaClientSecret") as? String)
+        trimmed(KeychainCredentialStore.string(for: .stravaOAuthClientSecret))
+            ?? trimmed(Bundle.main.object(forInfoDictionaryKey: "StravaClientSecret") as? String)
     }
 
     /// Must match Strava application settings and `CFBundleURLTypes` (e.g. `stridecheck://strava-oauth`).

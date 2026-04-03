@@ -10,6 +10,10 @@ struct WearableDataSourcesView: View {
     @State private var ouraDraft = ""
     @State private var ouraFooterNote: String?
     @State private var ouraConfigured = false
+    @State private var whoopClientIdDraft = ""
+    @State private var whoopSecretDraft = ""
+    @State private var whoopCredentialsConfigured = false
+    @State private var whoopFooterNote: String?
 
     var body: some View {
         List {
@@ -26,11 +30,34 @@ struct WearableDataSourcesView: View {
             Section {
                 Toggle("Use for run index", isOn: $includeWhoop)
                     .disabled(!whoopLink.isConnected)
+                TextField("Client ID", text: $whoopClientIdDraft)
+                    .textContentType(.username)
+                    .autocorrectionDisabled()
+                    .textInputAutocapitalization(.never)
+                SecureField("Client secret", text: $whoopSecretDraft)
+                    .textContentType(.password)
+                    .autocorrectionDisabled()
+                    .textInputAutocapitalization(.never)
+                Button("Save credentials to Keychain") {
+                    saveWhoopCredentials()
+                }
+                .disabled(
+                    whoopClientIdDraft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                        || whoopSecretDraft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                )
+                if KeychainCredentialStore.string(for: .whoopOAuthClientId) != nil,
+                   KeychainCredentialStore.string(for: .whoopOAuthClientSecret) != nil {
+                    Button("Remove Keychain credentials", role: .destructive) {
+                        removeWhoopKeychainCredentials()
+                    }
+                }
                 Group {
                     if whoopLink.isConnected {
                         Text("Connected to Whoop.")
+                    } else if whoopCredentialsConfigured {
+                        Text("Credentials are set. Tap Connect to sign in with Whoop.")
                     } else {
-                        Text("Connect so StrideCheck can read recovery, strain, and sleep from Whoop’s API.")
+                        Text("Add your app’s Client ID and secret from developer.whoop.com (or supply them via build settings), then connect.")
                     }
                 }
                 .font(.caption)
@@ -52,19 +79,23 @@ struct WearableDataSourcesView: View {
                             }
                         }
                         .buttonStyle(.borderedProminent)
-                        .disabled(whoopLink.isBusy)
+                        .disabled(whoopLink.isBusy || !whoopCredentialsConfigured)
                     }
                 }
             } header: {
                 Text("Whoop")
             } footer: {
                 VStack(alignment: .leading, spacing: 6) {
+                    if let note = whoopFooterNote {
+                        Text(note)
+                            .font(.caption)
+                    }
                     if let err = whoopLink.lastError {
                         Text(err)
                             .font(.caption)
                             .foregroundStyle(.red)
                     }
-                    Text("Requires `WhoopClientId` and `WhoopClientSecret` in your build configuration (see README).")
+                    Text("Register the redirect URI in the Whoop developer console: \(StrideCheckSecrets.whoopRedirectURI). Keychain values override WhoopClientId / WhoopClientSecret from Info.plist when both are saved.")
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                 }
@@ -99,6 +130,16 @@ struct WearableDataSourcesView: View {
                         .foregroundStyle(.secondary)
                 }
             }
+
+            Section {
+                NavigationLink {
+                    MapDataSourcesView()
+                } label: {
+                    Label("Map data sources (Strava)", systemImage: "map")
+                }
+            } footer: {
+                Text("Strava sign-in, API keys, and whether routes draw on the Route & 511 map.")
+            }
         }
         .navigationTitle("Data sources")
         .navigationBarTitleDisplayMode(.inline)
@@ -108,7 +149,33 @@ struct WearableDataSourcesView: View {
         .onAppear {
             whoopLink.refreshConnectionState()
             syncOuraConfigured()
+            syncWhoopCredentialsConfigured()
         }
+    }
+
+    private func syncWhoopCredentialsConfigured() {
+        whoopCredentialsConfigured = StrideCheckSecrets.whoopClientId != nil
+            && StrideCheckSecrets.whoopClientSecret != nil
+    }
+
+    private func saveWhoopCredentials() {
+        let id = whoopClientIdDraft.trimmingCharacters(in: .whitespacesAndNewlines)
+        let secret = whoopSecretDraft.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !id.isEmpty, !secret.isEmpty else { return }
+        KeychainCredentialStore.set(id, for: .whoopOAuthClientId)
+        KeychainCredentialStore.set(secret, for: .whoopOAuthClientSecret)
+        whoopClientIdDraft = ""
+        whoopSecretDraft = ""
+        syncWhoopCredentialsConfigured()
+        whoopFooterNote = "Saved to Keychain. Tap Connect Whoop to finish sign-in."
+    }
+
+    private func removeWhoopKeychainCredentials() {
+        KeychainCredentialStore.delete(.whoopOAuthClientId)
+        KeychainCredentialStore.delete(.whoopOAuthClientSecret)
+        whoopLink.disconnect()
+        syncWhoopCredentialsConfigured()
+        whoopFooterNote = "Keychain credentials removed. Values from Info.plist still apply if your build defines them."
     }
 
     private func syncOuraConfigured() {

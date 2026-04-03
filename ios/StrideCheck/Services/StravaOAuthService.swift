@@ -16,7 +16,7 @@ enum StravaOAuthError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .missingClientCredentials:
-            return "Add StravaClientId and StravaClientSecret (xcconfig or Info.plist) from Strava API settings."
+            return "Add Strava Client ID and secret in Map data sources (Keychain) or in your build’s Info.plist / xcconfig from Strava API settings."
         case .startFailed: return "Could not start Strava sign-in."
         case .noCallback: return "Strava sign-in did not return a callback URL."
         case .badRedirect: return "Unexpected redirect URL from Strava."

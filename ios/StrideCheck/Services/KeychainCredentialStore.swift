@@ -6,11 +6,15 @@ enum KeychainCredentialStore {
     private static let service = "com.alearceo.StrideCheck.credentials"
 
     enum Key: String {
+        case whoopOAuthClientId = "whoop.oauth.client_id"
+        case whoopOAuthClientSecret = "whoop.oauth.client_secret"
         case whoopAccessToken = "whoop.access"
         case whoopRefreshToken = "whoop.refresh"
         case whoopExpiryEpoch = "whoop.expiry"
         case ouraPersonalAccessToken = "oura.pat"
         case crimeometerAPIKey = "crimeometer.key"
+        case stravaOAuthClientId = "strava.oauth.client_id"
+        case stravaOAuthClientSecret = "strava.oauth.client_secret"
         case stravaAccessToken = "strava.access"
         case stravaRefreshToken = "strava.refresh"
         case stravaExpiryEpoch = "strava.expiry"
