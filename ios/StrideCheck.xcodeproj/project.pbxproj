@@ -10,6 +10,7 @@
 		AA0000000000000000000004 /* ConditionsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000014 /* ConditionsService.swift */; };
 		AA0000000000000000000005 /* LocationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000015 /* LocationService.swift */; };
 		AA0000000000000000000006 /* ConditionsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000016 /* ConditionsViewModel.swift */; };
+		AA0000000000000000000008 /* StrideCheckHTTPSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000019 /* StrideCheckHTTPSession.swift */; };
 		AA0000000000000000000007 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000018 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
@@ -21,6 +22,7 @@
 		AA0000000000000000000014 /* ConditionsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConditionsService.swift; sourceTree = "<group>"; };
 		AA0000000000000000000015 /* LocationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationService.swift; sourceTree = "<group>"; };
 		AA0000000000000000000016 /* ConditionsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConditionsViewModel.swift; sourceTree = "<group>"; };
+		AA0000000000000000000019 /* StrideCheckHTTPSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StrideCheckHTTPSession.swift; sourceTree = "<group>"; };
 		AA0000000000000000000017 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AA0000000000000000000018 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -71,6 +73,7 @@
 				AA0000000000000000000013 /* APIModels.swift */,
 				AA0000000000000000000014 /* ConditionsService.swift */,
 				AA0000000000000000000015 /* LocationService.swift */,
+				AA0000000000000000000019 /* StrideCheckHTTPSession.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -157,6 +160,7 @@
 				AA0000000000000000000003 /* APIModels.swift in Sources */,
 				AA0000000000000000000004 /* ConditionsService.swift in Sources */,
 				AA0000000000000000000005 /* LocationService.swift in Sources */,
+				AA0000000000000000000008 /* StrideCheckHTTPSession.swift in Sources */,
 				AA0000000000000000000006 /* ConditionsViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

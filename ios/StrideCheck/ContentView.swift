@@ -25,6 +25,7 @@ struct ContentView: View {
                 }
                 .padding()
             }
+            .scrollDismissesKeyboard(.interactively)
             .navigationTitle("StrideCheck")
         }
         .task {
