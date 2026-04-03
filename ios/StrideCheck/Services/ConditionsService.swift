@@ -78,6 +78,11 @@ struct ConditionsService {
         )
         let verdict = ScoreEngine.verdict(for: merged.score)
 
+        let noThirdPartyForRunIndex = !WearableRunIndexPreferences.includeWhoopInRunIndex
+            && !WearableRunIndexPreferences.includeOuraInRunIndex
+        let showRunIndexDataSourcesHint = noThirdPartyForRunIndex
+            && wearableResult.sourceLabel == WearableReadinessAggregator.noWearableSignalSourceLabel
+
         let awareness = AwarenessEngine.compute(
             isDay: weatherResult.current.isDay,
             apparentF: weatherResult.current.apparentTemperature,
@@ -108,7 +113,8 @@ struct ConditionsService {
             airRows: airRows,
             hourly: hourly,
             alerts: alertsResult,
-            cachedAt: nil
+            cachedAt: nil,
+            showRunIndexDataSourcesHint: showRunIndexDataSourcesHint
         )
     }
 

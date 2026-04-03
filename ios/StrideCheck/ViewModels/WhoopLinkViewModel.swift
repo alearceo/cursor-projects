@@ -17,6 +17,7 @@ final class WhoopLinkViewModel: ObservableObject {
         do {
             try await WhoopOAuthService.signInInteractively()
             isConnected = true
+            WearableRunIndexPreferences.includeWhoopInRunIndex = true
         } catch {
             lastError = error.localizedDescription
         }
@@ -24,6 +25,7 @@ final class WhoopLinkViewModel: ObservableObject {
 
     func disconnect() {
         WhoopOAuthService.disconnect()
+        WearableRunIndexPreferences.includeWhoopInRunIndex = false
         isConnected = false
         lastError = nil
     }

@@ -1,20 +1,26 @@
 import Foundation
 
-/// Combines **Whoop OAuth** (first-party recovery / strain / sleep), **Oura** personal access token, and **Apple Health**.
+/// Combines **Whoop OAuth**, **Oura** PAT, and **Apple Health** per `WearableRunIndexPreferences` (third-party opt-in).
 @MainActor
 enum WearableReadinessAggregator {
+    /// Shown in the run-index pipeline when Apple Health has no usable samples and no third-party slice is active.
+    static let noWearableSignalSourceLabel = "No wearable signal — enable Health or Data sources"
+
     static func loadWearableRunReadiness() async -> WearableRunReadiness {
         let hk = await HealthKitReadinessFetcher.shared.loadSample()
 
+        let useWhoop = WearableRunIndexPreferences.includeWhoopInRunIndex
+        let useOura = WearableRunIndexPreferences.includeOuraInRunIndex
+
         var whoopSlice: WhoopAPIClient.ReadinessSlice?
-        if KeychainCredentialStore.string(for: .whoopAccessToken) != nil {
+        if useWhoop, KeychainCredentialStore.string(for: .whoopAccessToken) != nil {
             whoopSlice = try? await WhoopAPIClient.fetchLatestSlice()
         } else {
             whoopSlice = nil
         }
 
         var ouraSlice: OuraPersonalAPIClient.DailySlice?
-        if let token = StrideCheckSecrets.ouraPersonalAccessToken {
+        if useOura, let token = StrideCheckSecrets.ouraPersonalAccessToken {
             ouraSlice = await OuraPersonalAPIClient.fetchLatestSlice(token: token)
         } else {
             ouraSlice = nil
@@ -38,7 +44,7 @@ enum WearableReadinessAggregator {
 
             var parts: [String] = ["Whoop API"]
             if hk.hrvSDNN != nil { parts.append("Apple Health HRV") }
-            if ouraSlice != nil { parts.append("Oura") }
+            if useOura, ouraSlice != nil { parts.append("Oura") }
 
             return WearableRunReadiness(
                 hrvSDNNMs: hk.hrvSDNN,
@@ -94,9 +100,9 @@ enum WearableReadinessAggregator {
 
         let sourceLabel: String
         if hk.hrvSDNN != nil || hk.sleepHoursLastNight != nil || hk.activeEnergyKcalYesterday != nil {
-            sourceLabel = "Apple Health (sync Whoop/Oura/Watch)"
+            sourceLabel = "Apple Health"
         } else {
-            sourceLabel = "Not connected — Health, Oura token, or Whoop OAuth"
+            sourceLabel = Self.noWearableSignalSourceLabel
         }
 
         return WearableRunReadiness(

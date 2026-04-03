@@ -16,6 +16,37 @@ final class HealthKitReadinessFetcher {
         let exerciseMinutesYesterday: Double?
     }
 
+    /// Human-readable status for Settings / Data sources (read access is coarse on iOS).
+    static func authorizationSummary() async -> String {
+        guard HKHealthStore.isHealthDataAvailable() else {
+            return "Health data not available on this device."
+        }
+        let store = HKHealthStore()
+        let types: Set<HKObjectType> = [
+            HKObjectType.quantityType(forIdentifier: .heartRateVariabilitySDNN)!,
+            HKObjectType.categoryType(forIdentifier: .sleepAnalysis)!,
+            HKObjectType.quantityType(forIdentifier: .activeEnergyBurned)!,
+            HKObjectType.quantityType(forIdentifier: .appleExerciseTime)!
+        ]
+        let writeTypes = Set<HKSampleType>()
+        return await withCheckedContinuation { cont in
+            store.getRequestStatusForAuthorization(toShare: writeTypes, read: types) { status, error in
+                if let error {
+                    cont.resume(returning: "Could not determine Health access (\(error.localizedDescription)).")
+                    return
+                }
+                switch status {
+                case .shouldRequest:
+                    cont.resume(returning: "Access not requested yet — open the Conditions tab and load a location to grant read access.")
+                case .unnecessary:
+                    cont.resume(returning: "Read access was requested. StrideCheck uses HRV, sleep, and activity when present in Health.")
+                @unknown default:
+                    cont.resume(returning: "Unknown authorization state.")
+                }
+            }
+        }
+    }
+
     func loadSample() async -> Sample {
         guard HKHealthStore.isHealthDataAvailable() else {
             return Sample(hrvSDNN: nil, sleepHoursLastNight: nil, activeEnergyKcalYesterday: nil, exerciseMinutesYesterday: nil)

@@ -24,6 +24,7 @@ struct ContentView: View {
             .tabItem { Label("Route & 511", systemImage: "map") }
             .tag(1)
         }
+        .environmentObject(whoopLink)
         .tint(.teal)
         .task {
             locationService.requestAccessAndLocation()
@@ -40,9 +41,9 @@ struct ContentView: View {
                 LazyVStack(alignment: .leading, spacing: 16) {
                     brandBlock
                     headerCard
+                    dataSourcesLinkCard
                     locationControls
                     notificationToggle
-                    whoopConnectCard
 
                     if let cached = vm.snapshot?.cachedAt {
                         offlineBanner(cached)
@@ -131,46 +132,33 @@ struct ContentView: View {
         }
     }
 
-    private var whoopConnectCard: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("Whoop (OAuth)")
-                .font(.subheadline.weight(.semibold))
-            Text("First-party recovery, strain, and sleep from developer.whoop.com. Register the same redirect URL (`stridecheck://whoop-oauth`) in the Whoop dashboard and set client id/secret via xcconfig (see README).")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-            if let err = whoopLink.lastError {
-                Text(err)
-                    .font(.caption)
-                    .foregroundStyle(.red)
-            }
-            HStack(spacing: 10) {
-                if whoopLink.isConnected {
-                    Text("Connected")
-                        .font(.subheadline)
+    private var dataSourcesLinkCard: some View {
+        NavigationLink {
+            WearableDataSourcesView()
+        } label: {
+            HStack(alignment: .center, spacing: 12) {
+                Image(systemName: "heart.text.square.fill")
+                    .font(.title2)
+                    .foregroundStyle(.teal)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Data sources for run index")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.primary)
+                    Text("Apple Health, Whoop, Oura — choose what affects your score")
+                        .font(.caption)
                         .foregroundStyle(.secondary)
-                    Button("Disconnect") {
-                        whoopLink.disconnect()
-                    }
-                    .buttonStyle(.bordered)
-                } else {
-                    Button {
-                        Task { await whoopLink.connect() }
-                    } label: {
-                        if whoopLink.isBusy {
-                            ProgressView()
-                        } else {
-                            Text("Connect Whoop")
-                        }
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .disabled(whoopLink.isBusy)
                 }
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.tertiary)
             }
+            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color(uiColor: .secondarySystemGroupedBackground))
+            .clipShape(RoundedRectangle(cornerRadius: 14))
         }
-        .padding(14)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(uiColor: .secondarySystemGroupedBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 14))
+        .buttonStyle(.plain)
     }
 
     private var notificationToggle: some View {
@@ -221,6 +209,34 @@ struct ContentView: View {
             .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
+    private func runIndexDataSourcesHintBanner() -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .top, spacing: 10) {
+                Image(systemName: "heart.slash")
+                    .foregroundStyle(.orange)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Run index needs a data source")
+                        .font(.subheadline.weight(.semibold))
+                    Text("Apple Health isn’t contributing (access off, denied, or no HRV/sleep/activity yet), and Whoop/Oura aren’t turned on for the run index. Use Data sources to allow Health or enable a wearable.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            NavigationLink {
+                WearableDataSourcesView()
+            } label: {
+                Text("Open Data sources")
+                    .font(.subheadline.weight(.semibold))
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.orange.opacity(0.1))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
     private func snapshotView(_ snap: ConditionsSnapshot) -> some View {
         VStack(alignment: .leading, spacing: 14) {
             VStack(alignment: .leading, spacing: 3) {
@@ -228,6 +244,10 @@ struct ContentView: View {
                 Text(String(format: "%.4f, %.4f", snap.latitude, snap.longitude))
                     .font(.caption.monospacedDigit())
                     .foregroundStyle(.secondary)
+            }
+
+            if snap.showRunIndexDataSourcesHint {
+                runIndexDataSourcesHintBanner()
             }
 
             runIndexCard(score: snap.score, verdict: snap.verdict, bullets: snap.bullets)

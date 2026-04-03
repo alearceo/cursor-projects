@@ -34,11 +34,13 @@ private struct PersistedConditionsSnapshot: Codable {
     let hourly: [HourlyPersisted]
     let alerts: [AlertPersisted]
     let savedAt: Date
+    let showRunIndexDataSourcesHint: Bool
 
     enum CodingKeys: String, CodingKey {
         case placeName, latitude, longitude, stateAbbrev, score, verdict, bullets, wearableRows
         case awarenessScore, awarenessVerdict, awarenessBullets
         case currentRows, airRows, hourly, alerts, savedAt
+        case showRunIndexDataSourcesHint
     }
 
     init(
@@ -57,7 +59,8 @@ private struct PersistedConditionsSnapshot: Codable {
         airRows: [StringPair],
         hourly: [HourlyPersisted],
         alerts: [AlertPersisted],
-        savedAt: Date
+        savedAt: Date,
+        showRunIndexDataSourcesHint: Bool
     ) {
         self.placeName = placeName
         self.latitude = latitude
@@ -75,6 +78,7 @@ private struct PersistedConditionsSnapshot: Codable {
         self.hourly = hourly
         self.alerts = alerts
         self.savedAt = savedAt
+        self.showRunIndexDataSourcesHint = showRunIndexDataSourcesHint
     }
 
     init(from decoder: Decoder) throws {
@@ -96,6 +100,7 @@ private struct PersistedConditionsSnapshot: Codable {
         hourly = try c.decode([HourlyPersisted].self, forKey: .hourly)
         alerts = try c.decode([AlertPersisted].self, forKey: .alerts)
         savedAt = try c.decode(Date.self, forKey: .savedAt)
+        showRunIndexDataSourcesHint = try c.decodeIfPresent(Bool.self, forKey: .showRunIndexDataSourcesHint) ?? false
     }
 }
 
@@ -124,7 +129,8 @@ enum SnapshotCache {
             airRows: snapshot.airRows.map { StringPair(key: $0.0, value: $0.1) },
             hourly: snapshot.hourly.map { HourlyPersisted(timeLabel: $0.timeLabel, icon: $0.icon, rainChanceLabel: $0.rainChanceLabel) },
             alerts: snapshot.alerts.map { AlertPersisted(headline: $0.headline, description: $0.description, severity: $0.severity) },
-            savedAt: Date()
+            savedAt: Date(),
+            showRunIndexDataSourcesHint: snapshot.showRunIndexDataSourcesHint
         )
         do {
             let data = try JSONEncoder().encode(persisted)
@@ -153,7 +159,8 @@ enum SnapshotCache {
             airRows: p.airRows.map { ($0.key, $0.value) },
             hourly: p.hourly.map { HourlyDisplay(timeLabel: $0.timeLabel, icon: $0.icon, rainChanceLabel: $0.rainChanceLabel) },
             alerts: p.alerts.map { NWSAlert(headline: $0.headline, description: $0.description, severity: $0.severity) },
-            cachedAt: p.savedAt
+            cachedAt: p.savedAt,
+            showRunIndexDataSourcesHint: p.showRunIndexDataSourcesHint
         )
     }
 

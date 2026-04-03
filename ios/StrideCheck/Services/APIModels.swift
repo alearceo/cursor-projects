@@ -148,4 +148,5 @@ struct ConditionsSnapshot {
     let hourly: [HourlyDisplay]
     let alerts: [NWSAlert]
     let cachedAt: Date?
+    let showRunIndexDataSourcesHint: Bool
 }
