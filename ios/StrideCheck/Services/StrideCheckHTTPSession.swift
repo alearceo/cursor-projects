@@ -11,6 +11,8 @@ private func strideCheckHostAllowed(_ rawHost: String) -> Bool {
     if host.hasSuffix(".open-meteo.com") { return true }
     if host.hasSuffix(".weather.gov") { return true }
     if host.hasSuffix(".zippopotam.us") { return true }
+    if host == "api.crimeometer.com" { return true }
+    if host == "api.ouraring.com" { return true }
     return false
 }
 

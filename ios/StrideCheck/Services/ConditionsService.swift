@@ -33,27 +33,60 @@ struct ConditionsService {
         }
 
         let name = "\(first.placeName), \(first.stateAbbreviation)"
-        return try await fetchByCoordinate(latitude: lat, longitude: lon, fallbackName: name)
+        let state = first.stateAbbreviation.uppercased()
+        return try await fetchByCoordinate(
+            latitude: lat,
+            longitude: lon,
+            fallbackName: name,
+            stateAbbrev: state.count == 2 ? state : nil
+        )
     }
 
-    func fetchByCoordinate(latitude: Double, longitude: Double, fallbackName: String? = nil) async throws -> ConditionsSnapshot {
-        let placeName = try await reverseGeocodeName(latitude: latitude, longitude: longitude) ?? fallbackName ?? "Current area"
+    func fetchByCoordinate(
+        latitude: Double,
+        longitude: Double,
+        fallbackName: String? = nil,
+        stateAbbrev: String? = nil
+    ) async throws -> ConditionsSnapshot {
+        let place = try await reverseGeocodePlace(latitude: latitude, longitude: longitude)
+        let placeName = place?.name ?? fallbackName ?? "Current area"
+        let resolvedState = place?.stateAbbrev ?? stateAbbrev?.uppercased()
 
         async let weather = fetchWeather(latitude: latitude, longitude: longitude)
         async let air = fetchAir(latitude: latitude, longitude: longitude)
         async let alerts = fetchAlerts(latitude: latitude, longitude: longitude)
 
+        async let crimeSummary = CrimeIncidentsService.fetchSummary(latitude: latitude, longitude: longitude)
+        async let wearable = WearableReadinessAggregator.loadWearableRunReadiness()
+
         let weatherResult = try await weather
         let airResult = try await air
         let alertsResult = await alerts
+        let crimeResult = await crimeSummary
+        let wearableResult = await wearable
 
-        let score = ScoreEngine.compute(
+        let envScore = ScoreEngine.compute(
             apparentF: weatherResult.current.apparentTemperature,
             gustMph: weatherResult.current.windGusts10m,
             weatherCode: weatherResult.current.weatherCode,
             usAQI: airResult?.current?.usAQI
         )
-        let verdict = ScoreEngine.verdict(for: score.score)
+        let merged = ScoreEngine.applyWearable(
+            baseScore: envScore.score,
+            bullets: envScore.bullets,
+            wearable: wearableResult
+        )
+        let verdict = ScoreEngine.verdict(for: merged.score)
+
+        let awareness = AwarenessEngine.compute(
+            isDay: weatherResult.current.isDay,
+            apparentF: weatherResult.current.apparentTemperature,
+            gustMph: weatherResult.current.windGusts10m,
+            weatherCode: weatherResult.current.weatherCode,
+            usAQI: airResult?.current?.usAQI,
+            alerts: alertsResult,
+            crime: crimeResult
+        )
 
         let currentRows = currentRows(from: weatherResult.current)
         let airRows = airRows(from: airResult?.current)
@@ -63,13 +96,19 @@ struct ConditionsService {
             placeName: placeName,
             latitude: latitude,
             longitude: longitude,
-            score: score.score,
+            stateAbbrev: resolvedState,
+            score: merged.score,
             verdict: verdict,
-            bullets: score.bullets,
+            bullets: merged.bullets,
+            wearableRows: merged.rows,
+            awarenessScore: awareness.score,
+            awarenessVerdict: awareness.verdict,
+            awarenessBullets: awareness.bullets,
             currentRows: currentRows,
             airRows: airRows,
             hourly: hourly,
-            alerts: alertsResult
+            alerts: alertsResult,
+            cachedAt: nil
         )
     }
 
@@ -78,8 +117,9 @@ struct ConditionsService {
         components.queryItems = [
             .init(name: "latitude", value: String(latitude)),
             .init(name: "longitude", value: String(longitude)),
-            .init(name: "current", value: "temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,wind_gusts_10m"),
+            .init(name: "current", value: "temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,wind_gusts_10m,is_day"),
             .init(name: "hourly", value: "weather_code,precipitation_probability"),
+            .init(name: "daily", value: "sunrise,sunset"),
             .init(name: "forecast_days", value: "2"),
             .init(name: "timezone", value: "auto"),
             .init(name: "wind_speed_unit", value: "mph"),
@@ -128,7 +168,7 @@ struct ConditionsService {
         }
     }
 
-    private func reverseGeocodeName(latitude: Double, longitude: Double) async throws -> String? {
+    private func reverseGeocodePlace(latitude: Double, longitude: Double) async throws -> (name: String, stateAbbrev: String?)? {
         let geocoder = CLGeocoder()
         let location = CLLocation(latitude: latitude, longitude: longitude)
         let placemarks = try await geocoder.reverseGeocodeLocation(location)
@@ -136,10 +176,20 @@ struct ConditionsService {
 
         let city = placemark.locality ?? placemark.subAdministrativeArea
         let state = placemark.administrativeArea
+        let abbr = placemark.administrativeArea?.uppercased()
+        let stateCode = (abbr?.count == 2) ? abbr : nil
+
+        let name: String
         if let city, let state {
-            return "\(city), \(state)"
+            name = "\(city), \(state)"
+        } else if let city {
+            name = city
+        } else if let state {
+            name = state
+        } else {
+            return nil
         }
-        return city ?? state
+        return (name, stateCode)
     }
 
     private func load(url: URL) async throws -> Data {
@@ -295,6 +345,72 @@ private enum ScoreEngine {
         return (max(0, min(100, score)), bullets)
     }
 
+    static func applyWearable(
+        baseScore: Int,
+        bullets: [String],
+        wearable: WearableRunReadiness
+    ) -> (score: Int, bullets: [String], rows: [(String, String)]) {
+        var score = baseScore
+        var b = bullets
+        var rows: [(String, String)] = [("Data source", wearable.sourceLabel)]
+
+        let hasSignal = wearable.readinessScore0to100 != nil
+            || wearable.sleepHours != nil
+            || wearable.hrvSDNNMs != nil
+            || wearable.strainProxy0to21 != nil
+
+        guard hasSignal else {
+            return (score, b, rows)
+        }
+
+        var delta = 0
+
+        if let r = wearable.readinessScore0to100 {
+            rows.append(("Oura readiness", "\(r)"))
+            if r < 55 {
+                delta -= 14
+                b.append("Wearables: readiness is low; shorten intensity until you rebound.")
+            } else if r < 72 {
+                delta -= 7
+                b.append("Wearables: readiness is middling; cap hard intervals.")
+            }
+        }
+
+        if let h = wearable.sleepHours {
+            rows.append(("Recent sleep", String(format: "%.1f h", h)))
+            if h < 5 {
+                delta -= 12
+                b.append("Wearables: sleep looks short; prioritize easy effort.")
+            } else if h < 6.2 {
+                delta -= 6
+                b.append("Wearables: lighter sleep; keep the run conversational.")
+            }
+        }
+
+        if let hrv = wearable.hrvSDNNMs {
+            rows.append(("Latest HRV (SDNN)", String(format: "%.0f ms", hrv)))
+            if hrv < 22 {
+                delta -= 8
+                b.append("Wearables: HRV looks suppressed; favor recovery pacing.")
+            } else if hrv < 32 {
+                delta -= 4
+            }
+        }
+
+        if let s = wearable.strainProxy0to21 {
+            rows.append(("Strain proxy", String(format: "%.0f / 21", min(21, s))))
+            if s >= 16 {
+                delta -= 8
+                b.append("Wearables: prior-day load looks high; ease today’s training.")
+            } else if s >= 12 {
+                delta -= 4
+            }
+        }
+
+        score = max(0, min(100, score + delta))
+        return (score, b, rows)
+    }
+
     static func verdict(for score: Int) -> String {
         switch score {
         case 80...100: return "Good window to run."
@@ -306,5 +422,127 @@ private enum ScoreEngine {
 
     private static func isWet(_ code: Int) -> Bool {
         return (51...67).contains(code) || (71...77).contains(code) || (80...82).contains(code) || (85...99).contains(code)
+    }
+}
+
+/// Environmental comfort, visibility, optional delayed crime-incident density (third-party API), and weather alerts.
+private enum AwarenessEngine {
+    static func compute(
+        isDay: Int?,
+        apparentF: Double?,
+        gustMph: Double?,
+        weatherCode: Int?,
+        usAQI: Double?,
+        alerts: [NWSAlert],
+        crime: CrimeIncidentsService.Summary?
+    ) -> (score: Int, verdict: String, bullets: [String]) {
+        var score = 100
+        var bullets: [String] = []
+
+        let night = (isDay == 0)
+        if night {
+            score -= 18
+            bullets.append("After dark, visibility and surface cues drop; favor lit, familiar streets.")
+        }
+
+        if let code = weatherCode {
+            if code == 45 || code == 48 {
+                score -= 14
+                bullets.append("Fog or low cloud base cuts sightlines; stay wider from traffic.")
+            }
+            if code >= 95 {
+                score -= 28
+                bullets.append("Storm conditions; postpone or shorten outdoor segments.")
+            } else if isWet(code) {
+                score -= 12
+                bullets.append("Wet surfaces reduce grip; slow for paint, metal plates, and leaves.")
+                if night {
+                    score -= 10
+                    bullets.append("Wet plus low light compounds crossing risk; use marked crosswalks.")
+                }
+            }
+        }
+
+        if let gust = gustMph, gust >= 36 {
+            score -= 10
+            bullets.append("Strong wind on open blocks can feel exposed; consider sheltered corridors.")
+        }
+
+        if let aqi = usAQI, aqi >= 151 {
+            score -= 12
+            bullets.append("Unhealthy air near traffic; shorten time on busy arterials.")
+        }
+
+        if let f = apparentF {
+            if f >= 92 {
+                score -= 8
+                bullets.append("High heat load builds quickly; hydrate and pick shade.")
+            } else if f <= 20 {
+                score -= 8
+                bullets.append("Cold stress; cover skin and watch for ice on bridges.")
+            }
+        }
+
+        let severeAlert = alerts.contains { alert in
+            let s = (alert.severity ?? "").lowercased()
+            return s.contains("extreme") || s.contains("severe")
+        }
+        if severeAlert {
+            score -= 12
+            bullets.append("High-severity weather alerts are active; confirm timing before you leave.")
+        } else if !alerts.isEmpty {
+            score -= 4
+            bullets.append("Weather alerts in effect; skim details before locking a route.")
+        }
+
+        if let crime {
+            let n = crime.incidentCount
+            if n >= 90 {
+                score -= 30
+                bullets.append(
+                    "Crime feed: very high reported incident volume within ~\(Int(crime.radiusMiles)) mi over \(crime.windowDays) days; favor busier, well-lit routes you know."
+                )
+            } else if n >= 50 {
+                score -= 22
+                bullets.append(
+                    "Crime feed: elevated reported incidents (~\(n) in ~\(Int(crime.radiusMiles)) mi / \(crime.windowDays) d); add daylight or a buddy if you feel unsure."
+                )
+            } else if n >= 25 {
+                score -= 14
+                bullets.append(
+                    "Crime feed: moderate reported incidents (~\(n) nearby); stay aware at crossings and parking exits."
+                )
+            } else if n > 0 {
+                score -= 6
+                bullets.append(
+                    "Crime feed: \(n) reported incidents in the search radius; cross-check local police or neighborhood sources."
+                )
+            } else {
+                bullets.append(
+                    "Crime feed: no incidents returned for this window — reporting may be sparse or filtered."
+                )
+            }
+            bullets.append(
+                "Reported incidents are incomplete, delayed, and vary by agency coverage — not a real-time personal safety guarantee."
+            )
+        }
+
+        if bullets.isEmpty {
+            bullets.append("Environmental cues look ordinary; still share plans if running solo.")
+        }
+
+        let finalScore = max(0, min(100, score))
+        let verdict: String
+        switch finalScore {
+        case 80...100: verdict = "Environment favors confident pacing."
+        case 60..<80: verdict = "Runnable with a few visibility or comfort cautions."
+        case 40..<60: verdict = "More environmental friction; shorten or reroute."
+        default: verdict = "Harsh conditions outdoors; delay or move inside."
+        }
+        return (finalScore, verdict, bullets)
+    }
+
+    private static func isWet(_ code: Int) -> Bool {
+        (51...67).contains(code) || (71...77).contains(code) || (80...82).contains(code) || (85...99).contains(code)
     }
 }
