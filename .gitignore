@@ -1,4 +1,7 @@
 .DS_Store
 
+# Xcode per-user UI state (do not commit)
+**/xcuserdata/**
+
 # Local API secrets (copy from ios/Config/Secrets.xcconfig.template)
 ios/Config/Secrets.xcconfig
