@@ -117,7 +117,7 @@ struct ConditionsService {
         request.setValue("StrideCheck iOS/1.0", forHTTPHeaderField: "User-Agent")
 
         do {
-            let (data, response) = try await URLSession.shared.data(for: request)
+            let (data, response) = try await StrideCheckHTTPSession.shared.data(for: request)
             guard let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode) else {
                 return []
             }
@@ -143,7 +143,7 @@ struct ConditionsService {
     }
 
     private func load(url: URL) async throws -> Data {
-        let (data, response) = try await URLSession.shared.data(from: url)
+        let (data, response) = try await StrideCheckHTTPSession.shared.data(from: url)
         guard let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode) else {
             throw URLError(.badServerResponse)
         }
