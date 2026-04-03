@@ -6,6 +6,7 @@ import SwiftUI
 struct ContentView: View {
     @StateObject private var vm = ConditionsViewModel()
     @StateObject private var locationService = LocationService()
+    @StateObject private var whoopLink = WhoopLinkViewModel()
     @AppStorage("stridecheck.notifyRunWindows") private var notifyStrongWindows = false
     @State private var selectedTab = 0
 
@@ -26,6 +27,7 @@ struct ContentView: View {
         .tint(.teal)
         .task {
             locationService.requestAccessAndLocation()
+            whoopLink.refreshConnectionState()
         }
         .onReceive(locationService.$coordinate.compactMap { $0 }) { coordinate in
             Task { await vm.loadForCurrentLocation(coordinate) }
@@ -40,6 +42,7 @@ struct ContentView: View {
                     headerCard
                     locationControls
                     notificationToggle
+                    whoopConnectCard
 
                     if let cached = vm.snapshot?.cachedAt {
                         offlineBanner(cached)
@@ -122,6 +125,48 @@ struct ContentView: View {
                 .disabled(vm.isLoading || vm.zipInput.count < 5)
             }
         }
+    }
+
+    private var whoopConnectCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Whoop (OAuth)")
+                .font(.subheadline.weight(.semibold))
+            Text("First-party recovery, strain, and sleep from developer.whoop.com. Register the same redirect URL (`stridecheck://whoop-oauth`) in the Whoop dashboard and set client id/secret via xcconfig (see README).")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            if let err = whoopLink.lastError {
+                Text(err)
+                    .font(.caption)
+                    .foregroundStyle(.red)
+            }
+            HStack(spacing: 10) {
+                if whoopLink.isConnected {
+                    Text("Connected")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                    Button("Disconnect") {
+                        whoopLink.disconnect()
+                    }
+                    .buttonStyle(.bordered)
+                } else {
+                    Button {
+                        Task { await whoopLink.connect() }
+                    } label: {
+                        if whoopLink.isBusy {
+                            ProgressView()
+                        } else {
+                            Text("Connect Whoop")
+                        }
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(whoopLink.isBusy)
+                }
+            }
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color(uiColor: .secondarySystemGroupedBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 14))
     }
 
     private var notificationToggle: some View {
@@ -368,7 +413,11 @@ struct RouteAnd511View: View {
     let stateAbbrev: String?
     let placeName: String?
 
+    @StateObject private var stravaLink = StravaLinkViewModel()
     @State private var position: MapCameraPosition = .automatic
+    @State private var trafficPolylines: [[CLLocationCoordinate2D]] = []
+    @State private var stravaPolylines: [[CLLocationCoordinate2D]] = []
+    @State private var stravaFetchToken = 0
 
     var body: some View {
         NavigationStack {
@@ -382,17 +431,51 @@ struct RouteAnd511View: View {
                 .background(Color(uiColor: .systemGroupedBackground))
                 .toolbar(.hidden, for: .navigationBar)
         }
-        .onAppear { recenterMap() }
+        .onAppear {
+            recenterMap()
+            stravaLink.refreshConnectionState()
+        }
         .onChange(of: coordinateKey) { _, _ in recenterMap() }
+        .task(id: overlayTaskKey) { await loadTrafficOverlay() }
+        .task(id: stravaTaskKey) { await loadStravaRoutes() }
+    }
+
+    private var stravaTaskKey: String {
+        "\(stravaLink.isConnected)|\(stravaFetchToken)"
+    }
+
+    private var overlayTaskKey: String {
+        "\(coordinateKey)|\(stateAbbrev ?? "")|\(StrideCheckSecrets.trafficOverlayGeoJSONURL?.absoluteString ?? "")"
+    }
+
+    private func loadTrafficOverlay() async {
+        guard let url = StrideCheckSecrets.trafficOverlayGeoJSONURL else {
+            trafficPolylines = []
+            return
+        }
+        trafficPolylines = await TrafficOverlayLoader.loadPolylines(from: url)
+    }
+
+    private func loadStravaRoutes() async {
+        guard stravaLink.isConnected else {
+            stravaPolylines = []
+            return
+        }
+        do {
+            stravaPolylines = try await StravaAPIClient.recentRunPolylines()
+        } catch {
+            stravaPolylines = []
+        }
     }
 
     private var route511Card: some View {
         VStack(alignment: .leading, spacing: 12) {
+            stravaCard
             if let placeName {
                 Text(placeName)
                     .font(.headline)
             }
-            Text("Official state 511 and DOT maps show closures, incidents, and construction. StrideCheck does not draw live 511 geometry yet — open your state link for full layers.")
+            Text(overlayCaption)
                 .font(.caption)
                 .foregroundStyle(.secondary)
             Link(destination: State511Links.url(forStateAbbrev: stateAbbrev)) {
@@ -412,6 +495,74 @@ struct RouteAnd511View: View {
         .padding(.bottom, 8)
     }
 
+    private var stravaCard: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Strava routes")
+                .font(.subheadline.weight(.semibold))
+            Text("Sign in to draw recent runs and walks on the map (summary polylines). Create an app at Strava API settings and add redirect `stridecheck://strava-oauth`; set `STRAVA_CLIENT_ID` / `STRAVA_CLIENT_SECRET` in xcconfig (see README).")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            if let err = stravaLink.lastError {
+                Text(err)
+                    .font(.caption2)
+                    .foregroundStyle(.red)
+            }
+            HStack(spacing: 10) {
+                if stravaLink.isConnected {
+                    Button("Disconnect") {
+                        stravaLink.disconnect()
+                        stravaPolylines = []
+                        stravaFetchToken += 1
+                    }
+                    .buttonStyle(.bordered)
+                    Button("Refresh routes") {
+                        stravaFetchToken += 1
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(.orange)
+                } else {
+                    Button {
+                        Task { await stravaLink.connect() }
+                    } label: {
+                        if stravaLink.isBusy {
+                            ProgressView()
+                                .frame(maxWidth: .infinity)
+                        } else {
+                            Text("Connect Strava")
+                                .frame(maxWidth: .infinity)
+                        }
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(.orange)
+                    .disabled(stravaLink.isBusy)
+                }
+            }
+            if stravaLink.isConnected {
+                Text(stravaPolylines.isEmpty ? "No run polylines returned yet — try Refresh, or check that recent Strava activities include GPS." : "Purple lines are your recent Strava activities (not navigation routes).")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color(uiColor: .tertiarySystemGroupedBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    private var overlayCaption: String {
+        var parts: [String] = []
+        parts.append("Official state 511 and DOT maps show closures, incidents, and construction.")
+        if trafficPolylines.isEmpty {
+            parts.append("Optional orange GeoJSON overlays use TrafficOverlayGeoJSONURL when configured (see README).")
+        } else {
+            parts.append("Orange lines are from your GeoJSON overlay (informational only).")
+        }
+        if stravaLink.isConnected, !stravaPolylines.isEmpty {
+            parts.append("Purple lines are from Strava.")
+        }
+        return parts.joined(separator: " ")
+    }
+
     private var coordinateKey: String {
         guard let c = coordinate else { return "" }
         return "\(c.latitude),\(c.longitude)"
@@ -423,6 +574,14 @@ struct RouteAnd511View: View {
             Map(position: $position) {
                 Marker("StrideCheck area", coordinate: c)
                     .tint(.teal)
+                ForEach(Array(trafficPolylines.enumerated()), id: \.offset) { _, coords in
+                    MapPolyline(coordinates: coords)
+                        .stroke(Color.orange.opacity(0.78), lineWidth: 3)
+                }
+                ForEach(Array(stravaPolylines.enumerated()), id: \.offset) { _, coords in
+                    MapPolyline(coordinates: coords)
+                        .stroke(Color.purple.opacity(0.85), lineWidth: 3)
+                }
             }
             // Flat standard style avoids extra Metal/terrain work that can spam Simulator logs (0×0 drawable, clip warnings).
             .mapStyle(.standard(elevation: .flat))

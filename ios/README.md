@@ -13,8 +13,9 @@ Native SwiftUI app for runner-focused conditions: weather, air quality, NWS aler
 | Networking / TLS | `Services/StrideCheckHTTPSession.swift` |
 | Offline | `Services/SnapshotCache.swift` |
 | Alerts | `Services/RunWindowNotifier.swift` |
-| Map / traffic | `Services/State511Links.swift` (state 511 URLs) |
-| Wearables | `Services/HealthKitReadinessFetcher.swift`, `Services/OuraPersonalAPIClient.swift`, `Services/WearableReadinessAggregator.swift` |
+| Map / traffic | `Services/State511Links.swift` (state 511 URLs), `Services/TrafficOverlayLoader.swift` (optional GeoJSON line overlays), `Services/StravaAPIClient.swift`, `Services/StravaOAuthService.swift`, `Services/EncodedPolylineDecoder.swift`, `ViewModels/StravaLinkViewModel.swift` (optional Strava route overlays) |
+| Wearables | `Services/HealthKitReadinessFetcher.swift`, `Services/OuraPersonalAPIClient.swift`, `Services/WhoopAPIClient.swift`, `Services/WhoopOAuthService.swift`, `Services/WearableReadinessAggregator.swift` |
+| Secrets | `Services/StrideCheckSecrets.swift`, `Services/KeychainCredentialStore.swift`, `StrideCheck/BuildConfig.xcconfig`, `Config/Secrets.xcconfig.template` |
 | Crime (optional) | `Services/CrimeIncidentsService.swift` |
 | Signing | `StrideCheck/StrideCheck.entitlements` (HealthKit) |
 
@@ -28,14 +29,47 @@ Native SwiftUI app for runner-focused conditions: weather, air quality, NWS aler
 
 The target uses the **HealthKit** capability. For a **physical device**, the App ID in the Apple Developer portal must have **HealthKit** enabled; then refresh or regenerate the provisioning profile (or use automatic signing and let Xcode fix it). Simulator builds do not hit that provisioning check the same way.
 
-## Configuration (optional keys in `Info.plist`)
+## Configuration: xcconfig, Keychain, and `Info.plist`
 
-| Key | Purpose |
-|-----|---------|
-| `OuraPersonalAccessToken` | If set (non-empty), the app calls Oura Cloud `v2/usercollection` for recent daily readiness, sleep, and activity. Create a token at [Oura personal access tokens](https://cloud.ouraring.com/personal-access-tokens). **Prefer a local xcconfig or untracked override for real tokens** so they are not committed. |
-| `CrimeometerAPIKey` | If set, the app requests nearby **reported** incidents from [Crimeometer](https://www.crimeometer.com/) for the route awareness index. Empty = crime layer disabled. Same caution: do not commit production secrets. |
+The **StrideCheck** target’s base configuration is `StrideCheck/BuildConfig.xcconfig`. It defines empty defaults for optional secrets, then `#include?`s `Config/Secrets.xcconfig` when you create it (gitignored).
 
-**Whoop:** There is no public personal-access-token flow comparable to Oura’s. If **Whoop → Apple Health** sync is enabled, **HealthKit** can still supply HRV, sleep, and activity proxies used in the run index.
+1. Copy `Config/Secrets.xcconfig.template` → `Config/Secrets.xcconfig` (same folder).
+2. Fill in values, or leave blank and use **Keychain** at runtime (see below).
+
+| Build setting (xcconfig) | `Info.plist` key (expanded) | Runtime behavior |
+|------------------------|-------------------------------|------------------|
+| `OURA_PERSONAL_ACCESS_TOKEN` | `OuraPersonalAccessToken` | **Keychain** wins if a value is stored (generic password service `com.alearceo.StrideCheck.credentials`, account `oura.pat`); otherwise plist from build. |
+| `CRIMEOMETER_API_KEY` | `CrimeometerAPIKey` | Same Keychain service; account `crimeometer.key` overrides plist. |
+| `WHOOP_CLIENT_ID` / `WHOOP_CLIENT_SECRET` | `WhoopClientId` / `WhoopClientSecret` | Used only for OAuth; **not** stored in Keychain as long-term secrets beyond the OAuth exchange. |
+| `TRAFFIC_OVERLAY_GEOJSON_URL` | `TrafficOverlayGeoJSONURL` | HTTPS URL to a **GeoJSON** `FeatureCollection` (or nested features) with `LineString` / `MultiLineString` geometry. Drawn in orange on the Route & 511 map. Empty = no overlay. |
+| `STRAVA_CLIENT_ID` / `STRAVA_CLIENT_SECRET` | `StravaClientId` / `StravaClientSecret` | Used for **Strava OAuth** on the Route & 511 tab only. Redirect URI **`stridecheck://strava-oauth`** must be registered in [Strava API settings](https://www.strava.com/settings/api); override with `StravaRedirectURI` in `Info.plist` if you use a custom scheme. Default scopes: `read`, `activity:read`. For **private** activities, change the scope string in `StravaOAuthService.swift` to include `activity:read_all` and re-authorize. |
+
+**Whoop OAuth:** Register the app at [WHOOP Developer](https://developer.whoop.com). Add redirect URI **`stridecheck://whoop-oauth`** (or set `WhoopRedirectURI` in `Info.plist` to match your custom scheme). Request scopes your product needs (e.g. recovery, cycles, sleep). After sign-in, **access and refresh tokens** are stored in the **Keychain**. The aggregator prefers **Whoop API** data when a valid access token exists; otherwise Oura PAT, then HealthKit.
+
+**Strava OAuth:** Same pattern as Whoop: tokens live in the **Keychain** after sign-in. The app requests recent activities and decodes **summary polylines** for **Run**, **TrailRun**, **VirtualRun**, and **Walk** types. Strava’s [API agreement](https://www.strava.com/legal/api) applies; do not replicate the Strava product or cache aggressively.
+
+**Security note:** The documented OAuth **authorization code** flow typically expects a **client secret** at token exchange time. Embedding `WHOOP_CLIENT_SECRET` or `STRAVA_CLIENT_SECRET` in a shipping app is weak; for production, prefer a **small backend** that holds the secret and exchanges the code for tokens, then issues tokens to the app.
+
+### CI and `Info.plist` merge pattern
+
+Xcode merges **target build settings** with **`INFOPLIST_FILE`**: any `$(VARIABLE)` in `Info.plist` is expanded from **xcconfig / build settings** at build time. You do **not** need a separate plist merge step if keys already use `$(OURA_PERSONAL_ACCESS_TOKEN)`-style placeholders.
+
+Example CI step before `xcodebuild`:
+
+```bash
+cat > ios/Config/Secrets.xcconfig <<EOF
+OURA_PERSONAL_ACCESS_TOKEN = ${OURA_PAT:-}
+CRIMEOMETER_API_KEY = ${CRIMEOMETER_KEY:-}
+WHOOP_CLIENT_ID = ${WHOOP_CLIENT_ID:-}
+WHOOP_CLIENT_SECRET = ${WHOOP_CLIENT_SECRET:-}
+TRAFFIC_OVERLAY_GEOJSON_URL = ${TRAFFIC_GEOJSON_URL:-}
+STRAVA_CLIENT_ID = ${STRAVA_CLIENT_ID:-}
+STRAVA_CLIENT_SECRET = ${STRAVA_CLIENT_SECRET:-}
+EOF
+xcodebuild -project ios/StrideCheck.xcodeproj -scheme StrideCheck -destination 'generic/platform=iOS Simulator' build
+```
+
+Use your CI system’s **secret store** for those environment variables; keep `Secrets.xcconfig` out of git (see repo `.gitignore`).
 
 ## Product behavior
 
@@ -55,13 +89,15 @@ The target uses the **HealthKit** capability. For a **physical device**, the App
 
 ### Route & 511 tab
 
-- Map centered on the last conditions coordinate; link to **state 511** (or FHWA directory fallback). Copy explains that live 511 map geometry is not drawn inside StrideCheck yet.
+- Map centered on the last conditions coordinate; link to **state 511** (or FHWA directory fallback).
+- Optional **GeoJSON** polylines (closures, custom DOT feeds, etc.) when `TrafficOverlayGeoJSONURL` resolves to a valid HTTPS URL; see `TrafficOverlayLoader.swift`.
+- Optional **Strava**: connect on this tab to overlay **purple** polylines for recent runs/walks (summary geometry from the Strava API). Orange remains the GeoJSON traffic overlay; teal marker is the conditions location.
 
 ## Corporate proxy (Zscaler / SSL inspection)
 
 If you see `ATS failed system trust`, `TLS Trust evaluation failed (-9802)`, or `NSURLErrorDomain Code=-1200` for API hosts, the network may be **SSL-inspecting** HTTPS.
 
-**In-app mitigation:** `Info.plist` adds **ATS exceptions** (CT + forward-secrecy relaxed) for the API domains in use, including `open-meteo.com`, `weather.gov`, `zippopotam.us`, **`crimeometer.com`**, and **`ouraring.com`** (subdomains where applicable). `StrideCheckHTTPSession` supplies `URLCredential(trust:)` for an internal **host allowlist** only.
+**In-app mitigation:** `Info.plist` adds **ATS exceptions** (CT + forward-secrecy relaxed) for the API domains in use, including `open-meteo.com`, `weather.gov`, `zippopotam.us`, **`crimeometer.com`**, **`ouraring.com`**, **`strava.com`**, and **`whoop.com`** (subdomains where applicable). `StrideCheckHTTPSession` supplies `URLCredential(trust:)` for an internal **host allowlist** only.
 
 **Still failing?** Trust your org’s inspection root on the device/Simulator, or ask IT to bypass inspection for the hostnames the app calls.
 
@@ -91,9 +127,19 @@ The Route tab uses a **full-area map** with **flat** standard map style and a **
 - **api.weather.gov** — active alerts for the coordinate.
 - **Crimeometer** — endpoint and query parameters may evolve; if counts stay at zero or requests fail, verify API docs and your key/plan. Parsing tolerates several JSON shapes (`incidents`, `results`, `data`, etc.).
 - **Oura** — field names follow v2 `usercollection` JSON; if Oura changes schemas, update `OuraPersonalAPIClient.swift`.
+- **Whoop** — v2 developer API (`api.prod.whoop.com`); see `WhoopAPIClient.swift` if field names change.
+- **Strava** — v3 endpoints (`www.strava.com/api/v3`); activity list and `map.summary_polyline` fields; see `StravaAPIClient.swift` and [Strava’s docs](https://developers.strava.com/docs/reference/).
 
-## Future enhancements
+## Research: alternatives to Crimeometer (no code in this repo)
 
-- Deeper **Whoop** integration via OAuth (developer.whoop.com) if you need first-party recovery/strain instead of Health mirroring.
-- Richer **511** or DOT map overlays where feed formats allow.
-- Move secrets to **Keychain** or **xcconfig** templates and document a `Info.plist` merge pattern for CI.
+Crimeometer is convenient for a **generic “incidents near a point”** API, but licensing, coverage, and pricing may not fit every product. Candidates to evaluate on a **separate branch** or spike:
+
+| Direction | Notes |
+|-----------|--------|
+| **FBI Crime Data Explorer (CDE)** | Official U.S. incident and aggregated data via their API; strong for research and some geographies, not a real-time “heat map” for runners. Terms and attribution matter. |
+| **State / city open data (Socrata, ArcGIS hubs)** | Many police departments publish **calls for service** or **reported incidents** with lat/lon; quality and refresh cadence vary. Often free but **per-city integration** work. |
+| **Microsoft Azure Maps crime tile layers** | Historical U.S. crime indexes as map layers (not raw incidents); different mental model than point incidents. |
+| **Commercial risk / location intelligence APIs** | Vendors (e.g. LexisNexis, insurers’ data partners) offer licensed crime/risk scores; typically **enterprise contracts**, not mobile freemium. |
+| **User-reported / community safety apps** | Ethically and legally sensitive; usually not appropriate to scrape; partnership would be required. |
+
+**Practical takeaway:** Replacing Crimeometer usually means either **official bulk data** (CDE, local open data) with custom geospatial queries, or a **commercial** licensed feed—not a drop-in swap. Keep disclaimers that **no dataset is complete or real-time** for personal safety decisions.

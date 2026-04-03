@@ -357,7 +357,9 @@ private enum ScoreEngine {
         let hasSignal = wearable.readinessScore0to100 != nil
             || wearable.sleepHours != nil
             || wearable.hrvSDNNMs != nil
+            || wearable.hrvRmssdMilli != nil
             || wearable.strainProxy0to21 != nil
+            || wearable.whoopCycleStrain != nil
 
         guard hasSignal else {
             return (score, b, rows)
@@ -366,7 +368,7 @@ private enum ScoreEngine {
         var delta = 0
 
         if let r = wearable.readinessScore0to100 {
-            rows.append(("Oura readiness", "\(r)"))
+            rows.append(("Recovery score", "\(r)"))
             if r < 55 {
                 delta -= 14
                 b.append("Wearables: readiness is low; shorten intensity until you rebound.")
@@ -387,8 +389,16 @@ private enum ScoreEngine {
             }
         }
 
-        if let hrv = wearable.hrvSDNNMs {
-            rows.append(("Latest HRV (SDNN)", String(format: "%.0f ms", hrv)))
+        if let rm = wearable.hrvRmssdMilli {
+            rows.append(("HRV (Whoop RMSSD)", String(format: "%.0f ms", rm)))
+            if rm < 20 {
+                delta -= 8
+                b.append("Wearables: HRV (RMSSD) looks low; favor recovery pacing.")
+            } else if rm < 30 {
+                delta -= 4
+            }
+        } else if let hrv = wearable.hrvSDNNMs {
+            rows.append(("HRV (SDNN)", String(format: "%.0f ms", hrv)))
             if hrv < 22 {
                 delta -= 8
                 b.append("Wearables: HRV looks suppressed; favor recovery pacing.")
@@ -397,7 +407,15 @@ private enum ScoreEngine {
             }
         }
 
-        if let s = wearable.strainProxy0to21 {
+        if let ws = wearable.whoopCycleStrain {
+            rows.append(("Whoop strain", String(format: "%.1f / 21", min(21, ws))))
+            if ws >= 16 {
+                delta -= 8
+                b.append("Wearables: prior-day strain is high; ease today’s training.")
+            } else if ws >= 12 {
+                delta -= 4
+            }
+        } else if let s = wearable.strainProxy0to21 {
             rows.append(("Strain proxy", String(format: "%.0f / 21", min(21, s))))
             if s >= 16 {
                 delta -= 8

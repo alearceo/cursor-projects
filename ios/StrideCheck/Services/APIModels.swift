@@ -118,9 +118,15 @@ struct HourlyDisplay: Identifiable {
 }
 
 struct WearableRunReadiness: Sendable {
+    /// Apple Health / other sources (SDNN, ms).
     let hrvSDNNMs: Double?
+    /// Whoop recovery HRV (RMSSD, ms) when using OAuth.
+    let hrvRmssdMilli: Double?
     let sleepHours: Double?
+    /// Heuristic 0–21 when inferred from Health/Oura MET or kcal.
     let strainProxy0to21: Double?
+    /// Native Whoop day strain (0–21) when OAuth connected.
+    let whoopCycleStrain: Double?
     let readinessScore0to100: Int?
     let sourceLabel: String
 }

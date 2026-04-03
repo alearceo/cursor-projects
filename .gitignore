@@ -1,1 +1,4 @@
 .DS_Store
+
+# Local API secrets (copy from ios/Config/Secrets.xcconfig.template)
+ios/Config/Secrets.xcconfig

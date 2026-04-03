@@ -1,0 +1,9 @@
+// Defaults (empty). Optional `Config/Secrets.xcconfig` (from template) overrides these when present.
+OURA_PERSONAL_ACCESS_TOKEN =
+CRIMEOMETER_API_KEY =
+WHOOP_CLIENT_ID =
+WHOOP_CLIENT_SECRET =
+TRAFFIC_OVERLAY_GEOJSON_URL =
+STRAVA_CLIENT_ID =
+STRAVA_CLIENT_SECRET =
+#include? "../../Config/Secrets.xcconfig"

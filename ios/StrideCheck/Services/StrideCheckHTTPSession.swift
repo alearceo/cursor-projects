@@ -13,6 +13,9 @@ private func strideCheckHostAllowed(_ rawHost: String) -> Bool {
     if host.hasSuffix(".zippopotam.us") { return true }
     if host == "api.crimeometer.com" { return true }
     if host == "api.ouraring.com" { return true }
+    if host == "api.prod.whoop.com" { return true }
+    if host == "www.strava.com" { return true }
+    if host == "strava.com" { return true }
     return false
 }
 
