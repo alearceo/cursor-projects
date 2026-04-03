@@ -7,7 +7,7 @@
         "key": "StrideCheck",
         "location": {
           "startingColumn": 30,
-          "startingLine": 28
+          "startingLine": 29
         }
       },
       {
@@ -23,7 +23,7 @@
         "key": "Road conditions for city runners",
         "location": {
           "startingColumn": 18,
-          "startingLine": 40
+          "startingLine": 41
         }
       },
       {
@@ -31,7 +31,7 @@
         "key": "Uses your iPhone location first. Zip code is optional fallback.",
         "location": {
           "startingColumn": 18,
-          "startingLine": 42
+          "startingLine": 43
         }
       },
       {
@@ -39,7 +39,7 @@
         "key": "Use Current Location",
         "location": {
           "startingColumn": 23,
-          "startingLine": 57
+          "startingLine": 58
         }
       },
       {
@@ -47,7 +47,7 @@
         "key": "Zip fallback (optional)",
         "location": {
           "startingColumn": 27,
-          "startingLine": 64
+          "startingLine": 65
         }
       },
       {
@@ -55,7 +55,7 @@
         "key": "Load Zip",
         "location": {
           "startingColumn": 24,
-          "startingLine": 67
+          "startingLine": 68
         }
       },
       {
@@ -63,7 +63,7 @@
         "key": "%lld",
         "location": {
           "startingColumn": 22,
-          "startingLine": 107
+          "startingLine": 108
         }
       },
       {
@@ -71,7 +71,7 @@
         "key": "Run Index",
         "location": {
           "startingColumn": 26,
-          "startingLine": 110
+          "startingLine": 111
         }
       },
       {
@@ -79,7 +79,7 @@
         "key": "Next 12 Hours",
         "location": {
           "startingColumn": 18,
-          "startingLine": 153
+          "startingLine": 154
         }
       },
       {
@@ -87,7 +87,7 @@
         "key": "Active Alerts",
         "location": {
           "startingColumn": 18,
-          "startingLine": 180
+          "startingLine": 181
         }
       },
       {
@@ -95,7 +95,7 @@
         "key": "No active NWS alerts right now.",
         "location": {
           "startingColumn": 22,
-          "startingLine": 186
+          "startingLine": 187
         }
       }
     ]

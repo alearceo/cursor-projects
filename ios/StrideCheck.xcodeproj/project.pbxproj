@@ -1,5 +1,8 @@
 // !$*UTF8*$!
 {
+	archiveVersion = 1;
+	classes = {
+	};
 	objectVersion = 56;
 	objects = {
 
@@ -11,6 +14,15 @@
 		AA0000000000000000000005 /* LocationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000015 /* LocationService.swift */; };
 		AA0000000000000000000006 /* ConditionsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000016 /* ConditionsViewModel.swift */; };
 		AA0000000000000000000007 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000018 /* Assets.xcassets */; };
+		AA0000000000000000000008 /* StrideCheckHTTPSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000019 /* StrideCheckHTTPSession.swift */; };
+		AA0000000000000000000101 /* SnapshotCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000104 /* SnapshotCache.swift */; };
+		AA0000000000000000000102 /* RunWindowNotifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000105 /* RunWindowNotifier.swift */; };
+		AA0000000000000000000103 /* State511Links.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000106 /* State511Links.swift */; };
+		AA0000000000000000000107 /* HealthKitReadinessFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000108 /* HealthKitReadinessFetcher.swift */; };
+		AA0000000000000000000109 /* OuraPersonalAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000010A /* OuraPersonalAPIClient.swift */; };
+		AA000000000000000000010B /* WearableReadinessAggregator.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000010C /* WearableReadinessAggregator.swift */; };
+		AA000000000000000000010D /* CrimeIncidentsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000010E /* CrimeIncidentsService.swift */; };
+		AA000000000000000000010F /* HealthKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000110 /* HealthKit.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -23,6 +35,16 @@
 		AA0000000000000000000016 /* ConditionsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConditionsViewModel.swift; sourceTree = "<group>"; };
 		AA0000000000000000000017 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AA0000000000000000000018 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		AA0000000000000000000019 /* StrideCheckHTTPSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StrideCheckHTTPSession.swift; sourceTree = "<group>"; };
+		AA0000000000000000000104 /* SnapshotCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapshotCache.swift; sourceTree = "<group>"; };
+		AA0000000000000000000105 /* RunWindowNotifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunWindowNotifier.swift; sourceTree = "<group>"; };
+		AA0000000000000000000106 /* State511Links.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = State511Links.swift; sourceTree = "<group>"; };
+		AA0000000000000000000108 /* HealthKitReadinessFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitReadinessFetcher.swift; sourceTree = "<group>"; };
+		AA000000000000000000010A /* OuraPersonalAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OuraPersonalAPIClient.swift; sourceTree = "<group>"; };
+		AA000000000000000000010C /* WearableReadinessAggregator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WearableReadinessAggregator.swift; sourceTree = "<group>"; };
+		AA000000000000000000010E /* CrimeIncidentsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrimeIncidentsService.swift; sourceTree = "<group>"; };
+		AA0000000000000000000110 /* HealthKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = HealthKit.framework; path = System/Library/Frameworks/HealthKit.framework; sourceTree = SDKROOT; };
+		AA0000000000000000000111 /* StrideCheck.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = StrideCheck.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -30,6 +52,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AA000000000000000000010F /* HealthKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -53,6 +76,7 @@
 				AA0000000000000000000034 /* ViewModels */,
 				AA0000000000000000000018 /* Assets.xcassets */,
 				AA0000000000000000000017 /* Info.plist */,
+				AA0000000000000000000111 /* StrideCheck.entitlements */,
 			);
 			path = StrideCheck;
 			sourceTree = "<group>";
@@ -71,6 +95,14 @@
 				AA0000000000000000000013 /* APIModels.swift */,
 				AA0000000000000000000014 /* ConditionsService.swift */,
 				AA0000000000000000000015 /* LocationService.swift */,
+				AA0000000000000000000019 /* StrideCheckHTTPSession.swift */,
+				AA0000000000000000000104 /* SnapshotCache.swift */,
+				AA0000000000000000000105 /* RunWindowNotifier.swift */,
+				AA0000000000000000000106 /* State511Links.swift */,
+				AA0000000000000000000108 /* HealthKitReadinessFetcher.swift */,
+				AA000000000000000000010A /* OuraPersonalAPIClient.swift */,
+				AA000000000000000000010C /* WearableReadinessAggregator.swift */,
+				AA000000000000000000010E /* CrimeIncidentsService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -157,7 +189,15 @@
 				AA0000000000000000000003 /* APIModels.swift in Sources */,
 				AA0000000000000000000004 /* ConditionsService.swift in Sources */,
 				AA0000000000000000000005 /* LocationService.swift in Sources */,
+				AA0000000000000000000008 /* StrideCheckHTTPSession.swift in Sources */,
 				AA0000000000000000000006 /* ConditionsViewModel.swift in Sources */,
+				AA0000000000000000000101 /* SnapshotCache.swift in Sources */,
+				AA0000000000000000000102 /* RunWindowNotifier.swift in Sources */,
+				AA0000000000000000000103 /* State511Links.swift in Sources */,
+				AA0000000000000000000107 /* HealthKitReadinessFetcher.swift in Sources */,
+				AA0000000000000000000109 /* OuraPersonalAPIClient.swift in Sources */,
+				AA000000000000000000010B /* WearableReadinessAggregator.swift in Sources */,
+				AA000000000000000000010D /* CrimeIncidentsService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -208,9 +248,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = StrideCheck/StrideCheck.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = WD4KK7P28K;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = StrideCheck/Info.plist;
@@ -231,9 +272,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = StrideCheck/StrideCheck.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = WD4KK7P28K;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = StrideCheck/Info.plist;

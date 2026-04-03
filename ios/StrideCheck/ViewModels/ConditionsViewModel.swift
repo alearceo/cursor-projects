@@ -10,6 +10,10 @@ final class ConditionsViewModel: ObservableObject {
 
     private let service = ConditionsService()
 
+    init() {
+        snapshot = SnapshotCache.load()
+    }
+
     func loadForCurrentLocation(_ coordinate: CLLocationCoordinate2D) async {
         await load {
             try await service.fetchByCoordinate(
@@ -31,9 +35,15 @@ final class ConditionsViewModel: ObservableObject {
         defer { isLoading = false }
 
         do {
-            snapshot = try await fetch()
+            let next = try await fetch()
+            snapshot = next
+            SnapshotCache.save(next)
+            await RunWindowNotifier.considerNotifyIfStrongRun(score: next.score)
         } catch {
             errorMessage = error.localizedDescription
+            if snapshot == nil {
+                snapshot = SnapshotCache.load()
+            }
         }
     }
 }

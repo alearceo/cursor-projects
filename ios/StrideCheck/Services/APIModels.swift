@@ -33,6 +33,12 @@ struct ZipPlace: Decodable {
 struct ForecastResponse: Decodable {
     let current: CurrentForecast
     let hourly: HourlyForecast
+    let daily: DailyForecast?
+}
+
+struct DailyForecast: Decodable {
+    let sunrise: [String]?
+    let sunset: [String]?
 }
 
 struct CurrentForecast: Decodable {
@@ -43,6 +49,7 @@ struct CurrentForecast: Decodable {
     let weatherCode: Int?
     let windSpeed10m: Double?
     let windGusts10m: Double?
+    let isDay: Int?
 
     enum CodingKeys: String, CodingKey {
         case temperature2m = "temperature_2m"
@@ -52,6 +59,7 @@ struct CurrentForecast: Decodable {
         case weatherCode = "weather_code"
         case windSpeed10m = "wind_speed_10m"
         case windGusts10m = "wind_gusts_10m"
+        case isDay = "is_day"
     }
 }
 
@@ -94,6 +102,12 @@ struct NWSAlert: Decodable, Identifiable {
     let headline: String
     let description: String?
     let severity: String?
+
+    init(headline: String, description: String?, severity: String?) {
+        self.headline = headline
+        self.description = description
+        self.severity = severity
+    }
 }
 
 struct HourlyDisplay: Identifiable {
@@ -103,15 +117,29 @@ struct HourlyDisplay: Identifiable {
     let rainChanceLabel: String
 }
 
+struct WearableRunReadiness: Sendable {
+    let hrvSDNNMs: Double?
+    let sleepHours: Double?
+    let strainProxy0to21: Double?
+    let readinessScore0to100: Int?
+    let sourceLabel: String
+}
+
 struct ConditionsSnapshot {
     let placeName: String
     let latitude: Double
     let longitude: Double
+    let stateAbbrev: String?
     let score: Int
     let verdict: String
     let bullets: [String]
+    let wearableRows: [(String, String)]
+    let awarenessScore: Int
+    let awarenessVerdict: String
+    let awarenessBullets: [String]
     let currentRows: [(String, String)]
     let airRows: [(String, String)]
     let hourly: [HourlyDisplay]
     let alerts: [NWSAlert]
+    let cachedAt: Date?
 }
