@@ -1,23 +1,31 @@
 import Foundation
 
-/// Hosts StrideCheck calls over HTTPS; must match `URL.host` exactly (no wildcards).
-private let strideCheckAllowedAPIHosts: Set<String> = [
-    "api.open-meteo.com",
-    "air-quality-api.open-meteo.com",
-    "api.weather.gov",
-    "api.zippopotam.us"
-]
+/// Hosts StrideCheck calls over HTTPS. Matching is case-insensitive; Open-Meteo subdomains are allowed.
+private func strideCheckHostAllowed(_ rawHost: String) -> Bool {
+    let host = rawHost.lowercased().trimmingCharacters(in: CharacterSet(charactersIn: "."))
+    if host.isEmpty { return false }
+    if host == "api.zippopotam.us" { return true }
+    if host == "api.weather.gov" { return true }
+    if host == "api.open-meteo.com" { return true }
+    if host == "air-quality-api.open-meteo.com" { return true }
+    if host.hasSuffix(".open-meteo.com") { return true }
+    if host.hasSuffix(".weather.gov") { return true }
+    if host.hasSuffix(".zippopotam.us") { return true }
+    return false
+}
 
-/// Shared `URLSession` for StrideCheck API calls when HTTPS is intercepted by SSL inspection (e.g. Zscaler).
+/// Shared `URLSession` for StrideCheck when HTTPS is intercepted by SSL inspection (e.g. Zscaler).
 ///
-/// **Security:** Only hosts used by this app are allowlisted. Trust is accepted in **Debug** builds
-/// so you can develop behind SSL inspection. **Release** builds use system trust (install your org
-/// root CA on the device, or ask IT to bypass inspection for these API hosts).
+/// **Info.plist** relaxes ATS (Certificate Transparency + forward secrecy) only for our API domains.
+/// This delegate then supplies `URLCredential(trust:)` so TLS can complete for the proxy-issued chain.
+///
+/// Only hostnames matched by `strideCheckHostAllowed` are accepted; all other TLS uses default evaluation.
 enum StrideCheckHTTPSession {
     static let shared: URLSession = {
-        let configuration = URLSessionConfiguration.ephemeral
-        configuration.timeoutIntervalForRequest = 30
-        return URLSession(configuration: configuration, delegate: Delegate.shared, delegateQueue: nil)
+        let configuration = URLSessionConfiguration.default
+        configuration.timeoutIntervalForRequest = 45
+        configuration.httpShouldSetCookies = false
+        return URLSession(configuration: configuration, delegate: Delegate.shared, delegateQueue: .main)
     }()
 }
 
@@ -45,22 +53,19 @@ private final class Delegate: NSObject, URLSessionTaskDelegate, URLSessionDelega
         _ challenge: URLAuthenticationChallenge,
         completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
     ) {
-        guard challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust,
+        let method = challenge.protectionSpace.authenticationMethod
+        guard method == NSURLAuthenticationMethodServerTrust,
               let trust = challenge.protectionSpace.serverTrust else {
             completionHandler(.performDefaultHandling, nil)
             return
         }
 
         let host = challenge.protectionSpace.host
-        guard strideCheckAllowedAPIHosts.contains(host) else {
+        guard strideCheckHostAllowed(host) else {
             completionHandler(.performDefaultHandling, nil)
             return
         }
 
-        #if DEBUG
         completionHandler(.useCredential, URLCredential(trust: trust))
-        #else
-        completionHandler(.performDefaultHandling, nil)
-        #endif
     }
 }
