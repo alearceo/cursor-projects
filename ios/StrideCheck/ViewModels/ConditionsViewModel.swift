@@ -14,6 +14,9 @@ final class ConditionsViewModel: ObservableObject {
 
     init() {
         snapshot = SnapshotCache.load()
+        if let snap = snapshot {
+            RunIndexWidgetExporter.publish(snap)
+        }
     }
 
     func loadForCurrentLocation(_ coordinate: CLLocationCoordinate2D) async {
@@ -48,6 +51,7 @@ final class ConditionsViewModel: ObservableObject {
             guard seq == loadSequence else { return }
             snapshot = next
             SnapshotCache.save(next)
+            RunIndexWidgetExporter.publish(next)
             await RunWindowNotifier.considerNotifyIfStrongRun(score: next.score)
         } catch {
             guard seq == loadSequence else { return }

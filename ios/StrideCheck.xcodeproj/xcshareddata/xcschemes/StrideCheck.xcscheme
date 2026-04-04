@@ -20,6 +20,20 @@
                ReferencedContainer = "container:StrideCheck.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "AA0000000000000000000236"
+               BuildableName = "StrideCheckRunIndexWidget.appex"
+               BlueprintName = "StrideCheckRunIndexWidget"
+               ReferencedContainer = "container:StrideCheck.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
