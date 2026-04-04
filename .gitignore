@@ -1,10 +1,46 @@
 .DS_Store
+Thumbs.db
 
-# Xcode per-user UI state (do not commit)
+# Xcode — per-user and ephemeral (never commit)
 **/xcuserdata/**
+*.xcuserstate
+*.xccheckout
+*.xcscmblueprint
+*.moved-aside
+*.hmap
 
-# Local API secrets (copy from ios/Config/Secrets.xcconfig.template)
-ios/Config/Secrets.xcconfig
+# Build products & caches
+DerivedData/
+**/DerivedData/
+*.xcarchive
+*.xcresult
+*.ipa
+*.dSYM.zip
+build/
 
 # Agent/local xcodebuild -derivedDataPath
 ios/.derivedData/
+
+# CocoaPods / Carthage (if added later)
+Pods/
+Carthage/Build/
+
+# Swift Package Manager (if used at repo root)
+.build/
+.swiftpm/xcode/package.xcworkspace/xcuserdata/
+
+# fastlane (if added later)
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/test_output
+fastlane/screenshots/**/*.png
+
+# Local env / secrets (never commit real values)
+ios/Config/Secrets.xcconfig
+.env
+.env.local
+.env.*.local
+
+# Merge / editor debris
+*.orig
+*~
