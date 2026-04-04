@@ -9,6 +9,8 @@ final class ConditionsViewModel: ObservableObject {
     @Published var zipInput = ""
 
     private let service = ConditionsService()
+    /// Supersedes in-flight loads when pull-to-refresh overlaps location updates (or vice versa).
+    private var loadSequence = 0
 
     init() {
         snapshot = SnapshotCache.load()
@@ -30,16 +32,25 @@ final class ConditionsViewModel: ObservableObject {
     }
 
     private func load(fetch: () async throws -> ConditionsSnapshot) async {
+        loadSequence += 1
+        let seq = loadSequence
+
         isLoading = true
         errorMessage = nil
-        defer { isLoading = false }
+        defer {
+            if loadSequence == seq {
+                isLoading = false
+            }
+        }
 
         do {
             let next = try await fetch()
+            guard seq == loadSequence else { return }
             snapshot = next
             SnapshotCache.save(next)
             await RunWindowNotifier.considerNotifyIfStrongRun(score: next.score)
         } catch {
+            guard seq == loadSequence else { return }
             guard !isBenignCancellation(error) else { return }
             errorMessage = error.localizedDescription
             if snapshot == nil {
