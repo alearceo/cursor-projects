@@ -89,13 +89,12 @@ enum RunIndexWidgetContextLine {
         return v
     }
 
+    /// Primary source for a short widget phrase (matches comma-separated `WearableReadinessAggregator` labels).
     private static func shortSourceLabel(_ label: String) -> String {
-        let first = label.split(separator: "+", maxSplits: 1, omittingEmptySubsequences: true).first.map(String.init) ?? label
-        let word = first.split(separator: " ").first.map(String.init) ?? first
-        var w = word.trimmingCharacters(in: .whitespaces)
-        if w.caseInsensitiveCompare("Apple") == .orderedSame { return "Health" }
-        if w.lowercased() == "no" { return "" }
-        return w
+        let t = label.trimmingCharacters(in: .whitespaces)
+        if t.lowercased().hasPrefix("no wearable signal") { return "" }
+        guard let first = t.split(separator: ",").first else { return t }
+        return first.trimmingCharacters(in: .whitespaces)
     }
 
     private static func parseFeelsLikeF(_ s: String) -> Int? {

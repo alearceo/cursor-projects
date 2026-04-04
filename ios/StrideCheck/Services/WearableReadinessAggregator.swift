@@ -50,10 +50,10 @@ enum WearableReadinessAggregator {
                 strainProxy = nil
             }
 
-            var parts: [String] = ["Whoop API"]
-            if hk.hrvSDNN != nil { parts.append("Apple Health HRV") }
-            if useOura, ouraSlice != nil { parts.append("Oura") }
-            if useGarmin, garminSlice != nil { parts.append("Garmin") }
+            var names: [String] = ["Whoop"]
+            if hk.hrvSDNN != nil { names.append("Apple Health") }
+            if useOura, ouraSlice != nil { names.append("Oura") }
+            if useGarmin, garminSlice != nil { names.append("Garmin") }
 
             return WearableRunReadiness(
                 hrvSDNNMs: hk.hrvSDNN,
@@ -62,7 +62,7 @@ enum WearableReadinessAggregator {
                 strainProxy0to21: strainProxy,
                 whoopCycleStrain: w.cycleStrain,
                 readinessScore0to100: readiness,
-                sourceLabel: parts.joined(separator: " + ")
+                sourceLabel: names.joined(separator: ", ")
             )
         }
 
@@ -80,15 +80,9 @@ enum WearableReadinessAggregator {
                 strainProxy = nil
             }
 
-            var sourceLabel: String
-            if hk.hrvSDNN != nil {
-                sourceLabel = "Oura API + Apple Health"
-            } else {
-                sourceLabel = "Oura API"
-            }
-            if useGarmin, garminSlice != nil {
-                sourceLabel += " + Garmin"
-            }
+            var names = ["Oura"]
+            if hk.hrvSDNN != nil { names.append("Apple Health") }
+            if useGarmin, garminSlice != nil { names.append("Garmin") }
 
             return WearableRunReadiness(
                 hrvSDNNMs: hk.hrvSDNN,
@@ -97,7 +91,7 @@ enum WearableReadinessAggregator {
                 strainProxy0to21: strainProxy,
                 whoopCycleStrain: nil,
                 readinessScore0to100: readinessScore,
-                sourceLabel: sourceLabel
+                sourceLabel: names.joined(separator: ", ")
             )
         }
 
@@ -113,11 +107,9 @@ enum WearableReadinessAggregator {
                 strainProxy = nil
             }
 
-            var sourceLabel = "Garmin API"
-            if g.hrvSDNNMs == nil, hk.hrvSDNN != nil {
-                sourceLabel += " + Apple Health (HRV)"
-            } else if hk.hrvSDNN != nil || hk.sleepHoursLastNight != nil {
-                sourceLabel += " + Apple Health"
+            var names = ["Garmin"]
+            if hk.hrvSDNN != nil || hk.sleepHoursLastNight != nil {
+                names.append("Apple Health")
             }
 
             return WearableRunReadiness(
@@ -127,7 +119,7 @@ enum WearableReadinessAggregator {
                 strainProxy0to21: strainProxy,
                 whoopCycleStrain: nil,
                 readinessScore0to100: g.readinessScore0to100,
-                sourceLabel: sourceLabel
+                sourceLabel: names.joined(separator: ", ")
             )
         }
 

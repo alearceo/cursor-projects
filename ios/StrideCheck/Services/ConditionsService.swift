@@ -78,7 +78,6 @@ struct ConditionsService {
         let merged = ScoreEngine.applyWearable(
             baseScore: envScore.score,
             bullets: envScore.bullets,
-            comfortRows: envScore.comfortRows,
             wearable: wearableResult
         )
         let verdict = ScoreEngine.verdict(for: merged.score)
@@ -296,7 +295,7 @@ private enum ScoreEngine {
         gustMph: Double?,
         weatherCode: Int?,
         usAQI: Double?
-    ) -> (score: Int, bullets: [String], comfortRows: [(String, String)]) {
+    ) -> (score: Int, bullets: [String]) {
         var score = 100
         var bullets: [String] = []
 
@@ -389,18 +388,17 @@ private enum ScoreEngine {
             bullets.append("Conditions look favorable for a city run.")
         }
 
-        return (max(0, min(100, score)), bullets, stress.comfortRows)
+        return (max(0, min(100, score)), bullets)
     }
 
     static func applyWearable(
         baseScore: Int,
         bullets: [String],
-        comfortRows: [(String, String)],
         wearable: WearableRunReadiness
     ) -> (score: Int, bullets: [String], rows: [(String, String)]) {
         var score = baseScore
         var b = bullets
-        var rows: [(String, String)] = comfortRows + [("Data source", wearable.sourceLabel)]
+        var rows: [(String, String)] = [("Data source", wearable.sourceLabel)]
 
         let hasSignal = wearable.readinessScore0to100 != nil
             || wearable.sleepHours != nil
