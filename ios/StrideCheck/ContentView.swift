@@ -36,6 +36,18 @@ struct ContentView: View {
         .onReceive(locationService.$coordinate.compactMap { $0 }) { coordinate in
             Task { await vm.loadForCurrentLocation(coordinate) }
         }
+        .onReceive(NotificationCenter.default.publisher(for: .strideCheckReloadConditionsSnapshot)) { _ in
+            Task { await reloadConditionsSnapshotIfPossible() }
+        }
+    }
+
+    /// Refetches conditions (including wearable run index inputs) after Data sources or Whoop connection changes.
+    private func reloadConditionsSnapshotIfPossible() async {
+        if let c = locationService.coordinate {
+            await vm.loadForCurrentLocation(c)
+        } else if vm.zipInput.count == 5 {
+            await vm.loadForZip()
+        }
     }
 
     private var conditionsPane: some View {

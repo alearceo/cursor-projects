@@ -18,6 +18,7 @@ final class WhoopLinkViewModel: ObservableObject {
             try await WhoopOAuthService.signInInteractively()
             isConnected = true
             WearableRunIndexPreferences.includeWhoopInRunIndex = true
+            ConditionsSnapshotReload.request()
         } catch {
             lastError = error.localizedDescription
         }
@@ -28,5 +29,6 @@ final class WhoopLinkViewModel: ObservableObject {
         WearableRunIndexPreferences.includeWhoopInRunIndex = false
         isConnected = false
         lastError = nil
+        ConditionsSnapshotReload.request()
     }
 }

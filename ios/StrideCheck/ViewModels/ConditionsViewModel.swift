@@ -67,3 +67,14 @@ final class ConditionsViewModel: ObservableObject {
         return ns.domain == NSURLErrorDomain && ns.code == NSURLErrorCancelled
     }
 }
+
+extension Notification.Name {
+    /// Posted when wearable credentials or run-index toggles change so Conditions can refetch `WearableReadinessAggregator` data.
+    static let strideCheckReloadConditionsSnapshot = Notification.Name("StrideCheck.reloadConditionsSnapshot")
+}
+
+enum ConditionsSnapshotReload {
+    static func request() {
+        NotificationCenter.default.post(name: .strideCheckReloadConditionsSnapshot, object: nil)
+    }
+}
