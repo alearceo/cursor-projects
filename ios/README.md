@@ -1,20 +1,20 @@
 # StrideCheck iOS (SwiftUI)
 
-Native SwiftUI app for runner-focused conditions: weather, air quality, NWS alerts, a blended **run index**, optional **wearable readiness**, and a **route awareness** index (environment plus optional crime-incident context). Includes offline cache, optional local notifications, and a **Route & 511** tab with MapKit and state 511 links.
+Native SwiftUI app for runner-focused conditions: weather, air quality, NWS alerts, a blended **run index**, optional **wearable readiness** (Apple Health baseline plus opt-in **Whoop** / **Oura** for the index), and a **route awareness** index (environment plus optional crime-incident context). **Data sources** screens centralize credentials and toggles; **Strava** map overlays are **opt-in**. Includes offline cache, optional local notifications, and a **Route & 511** tab with MapKit and state 511 links.
 
 ## Project layout
 
 | Area | Files |
 |------|--------|
-| App | `StrideCheckApp.swift`, `ContentView.swift`, `WearableDataSourcesView.swift` (run index data sources), `RouteTrafficMapView.swift` (MapKit traffic + overlays), `LaunchScreen.storyboard` (full-screen launch; avoids letterboxing on modern iPhones) |
-| State | `ViewModels/ConditionsViewModel.swift` |
+| App | `StrideCheckApp.swift`, `ContentView.swift` (Conditions + Route tabs, top **edge frost** over status bar), `WearableDataSourcesView.swift` (run-index data sources), `MapDataSourcesView.swift` (Strava map overlay + OAuth client fields), `RouteTrafficMapView.swift` (MapKit traffic + overlays), `LaunchScreen.storyboard` (full-screen launch; avoids letterboxing on modern iPhones) |
+| State | `ViewModels/ConditionsViewModel.swift` (load **sequencing**, benign **cancellation** handling; `ConditionsSnapshotReload` + notification name for wearable-driven refetch) |
 | Location | `Services/LocationService.swift` |
 | Conditions & scoring | `Services/ConditionsService.swift`, `Services/APIModels.swift` |
 | Networking / TLS | `Services/StrideCheckHTTPSession.swift` |
 | Offline | `Services/SnapshotCache.swift` |
 | Alerts | `Services/RunWindowNotifier.swift` |
-| Map / traffic | `Services/State511Links.swift` (511 portal URLs), `Services/StateTrafficOverlayFeeds.swift` (curated per-state DOT ArcGIS GeoJSON queries), `Services/TrafficOverlayLoader.swift` (GeoJSON → points/polylines), `Services/StravaAPIClient.swift`, `Services/StravaOAuthService.swift`, `Services/EncodedPolylineDecoder.swift`, `ViewModels/StravaLinkViewModel.swift` (Strava route overlays) |
-| Wearables | `Services/HealthKitReadinessFetcher.swift`, `Services/OuraPersonalAPIClient.swift`, `Services/WhoopAPIClient.swift`, `Services/WhoopOAuthService.swift`, `Services/WearableReadinessAggregator.swift`, `Services/WearableRunIndexPreferences.swift`, `ViewModels/WhoopLinkViewModel.swift` |
+| Map / traffic | `Services/State511Links.swift` (511 portal URLs), `Services/StateTrafficOverlayFeeds.swift` (curated per-state DOT ArcGIS GeoJSON queries), `Services/TrafficOverlayLoader.swift` (GeoJSON → points/polylines), `Services/StravaAPIClient.swift`, `Services/StravaOAuthService.swift`, `Services/StravaMapOverlayPreferences.swift` (map overlay **opt-in** + one-time migration), `Services/EncodedPolylineDecoder.swift`, `ViewModels/StravaLinkViewModel.swift` (shared via `environmentObject`; route refresh token) |
+| Wearables | `Services/HealthKitReadinessFetcher.swift` (includes **Health authorization summary** for Data sources), `Services/OuraPersonalAPIClient.swift`, `Services/WhoopAPIClient.swift`, `Services/WhoopOAuthService.swift`, `Services/WearableReadinessAggregator.swift`, `Services/WearableRunIndexPreferences.swift` (Whoop/Oura **use for run index** + migration), `ViewModels/WhoopLinkViewModel.swift` |
 | Secrets | `Services/StrideCheckSecrets.swift`, `Services/KeychainCredentialStore.swift`, `StrideCheck/BuildConfig.xcconfig`, `Config/Secrets.xcconfig.template` |
 | Crime (optional) | `Services/CrimeIncidentsService.swift` |
 | Signing | `StrideCheck/StrideCheck.entitlements` (HealthKit) |
@@ -40,16 +40,16 @@ The **StrideCheck** target’s base configuration is `StrideCheck/BuildConfig.xc
 |------------------------|-------------------------------|------------------|
 | `OURA_PERSONAL_ACCESS_TOKEN` | `OuraPersonalAccessToken` | **Keychain** wins if a value is stored (generic password service `com.alearceo.StrideCheck.credentials`, account `oura.pat`); otherwise plist from build. |
 | `CRIMEOMETER_API_KEY` | `CrimeometerAPIKey` | Same Keychain service; account `crimeometer.key` overrides plist. |
-| `WHOOP_CLIENT_ID` / `WHOOP_CLIENT_SECRET` | `WhoopClientId` / `WhoopClientSecret` | Used only for OAuth; **not** stored in Keychain as long-term secrets beyond the OAuth exchange. |
-| `STRAVA_CLIENT_ID` / `STRAVA_CLIENT_SECRET` | `StravaClientId` / `StravaClientSecret` | Used for **Strava OAuth** on the Route & 511 tab only. Redirect URI **`stridecheck://strava-oauth`** must be registered in [Strava API settings](https://www.strava.com/settings/api); override with `StravaRedirectURI` in `Info.plist` if you use a custom scheme. Default scopes: `read`, `activity:read`. For **private** activities, change the scope string in `StravaOAuthService.swift` to include `activity:read_all` and re-authorize. |
+| `WHOOP_CLIENT_ID` / `WHOOP_CLIENT_SECRET` | `WhoopClientId` / `WhoopClientSecret` | **Keychain** (`whoop.oauth.client_id` / `whoop.oauth.client_secret`) wins when both are saved from **Data sources**; otherwise plist/xcconfig. Used for OAuth code exchange; **access/refresh tokens** are stored in Keychain after sign-in. |
+| `STRAVA_CLIENT_ID` / `STRAVA_CLIENT_SECRET` | `StravaClientId` / `StravaClientSecret` | **Keychain** (`strava.oauth.client_id` / `strava.oauth.client_secret`) wins when both are saved from **Map data sources**; otherwise plist/xcconfig. Redirect URI **`stridecheck://strava-oauth`** must be registered in [Strava API settings](https://www.strava.com/settings/api); override with `StravaRedirectURI` in `Info.plist` if you use a custom scheme. Default scopes: `read`, `activity:read`. For **private** activities, change the scope string in `StravaOAuthService.swift` to include `activity:read_all` and re-authorize. |
 
 **Deprecated (removed):** `TrafficOverlayGeoJSONURL` / `TRAFFIC_OVERLAY_GEOJSON_URL` — the app no longer reads a custom GeoJSON URL from plist. Use **Apple Maps traffic** on the Route tab plus **per-state feeds** in `StateTrafficOverlayFeeds.swift` (Option C), or open the official 511 link.
 
-**Whoop OAuth:** Register the app at [WHOOP Developer](https://developer.whoop.com). Add redirect URI **`stridecheck://whoop-oauth`** (or set `WhoopRedirectURI` in `Info.plist` to match your custom scheme). After sign-in, tokens live in the **Keychain**. **Data sources for run index** (Conditions tab → chevron card): users turn **Use for run index** on or off per integration. Whoop API data is used only when connected **and** that toggle is on (connecting sets the toggle on; disconnect clears it).
+**Whoop OAuth:** Register the app at [WHOOP Developer](https://developer.whoop.com). Add redirect URI **`stridecheck://whoop-oauth`** (or set `WhoopRedirectURI` in `Info.plist` to match your custom scheme). Users can enter **Client ID** and **Client secret** in **Data sources** (saved to Keychain) or rely on build-time plist/xcconfig. After sign-in, **access/refresh tokens** live in the **Keychain**. **Data sources for run index** (Conditions tab → card): **Use for run index** is per integration. Whoop API data is used only when connected **and** that toggle is on (connecting sets the toggle on; disconnect clears it).
 
 **Oura:** Optional **Keychain** token from **Data sources** (or build-time plist). The **Use for run index** toggle must be on for the Oura API to affect the score; otherwise only Apple Health (and other Health-sourced data) applies.
 
-**Strava OAuth:** Same pattern as Whoop: tokens live in the **Keychain** after sign-in. The app requests recent activities and decodes **summary polylines** for **Run**, **TrailRun**, **VirtualRun**, and **Walk** types. Strava’s [API agreement](https://www.strava.com/legal/api) applies; do not replicate the Strava product or cache aggressively.
+**Strava OAuth:** **Map data sources** (Route & 511 card → **Map data sources**, or Conditions → Data sources → **Map data sources (Strava)**): **Client ID**, **Client secret** (Keychain or plist), **Connect Strava**, optional **Show Strava routes on map** (`UserDefaults`; **off** for new installs). Polylines load only when **signed in and overlay is on**—no silent Strava API fetch for the map. **One-time migration:** if a Strava access token already exists, the overlay toggle is turned **on** once so existing users keep prior behavior. After sign-in, tokens live in the **Keychain**. The app requests recent activities and decodes **summary polylines** for **Run**, **TrailRun**, **VirtualRun**, and **Walk** types. Strava’s [API agreement](https://www.strava.com/legal/api) applies; do not replicate the Strava product or cache aggressively. `StravaLinkViewModel` is owned by `ContentView` and injected with `environmentObject` so Route and Map data sources share connection state.
 
 **Security note:** The documented OAuth **authorization code** flow typically expects a **client secret** at token exchange time. Embedding `WHOOP_CLIENT_SECRET` or `STRAVA_CLIENT_SECRET` in a shipping app is weak; for production, prefer a **small backend** that holds the secret and exchanges the code for tokens, then issues tokens to the app.
 
@@ -79,12 +79,21 @@ Use your CI system’s **secret store** for those environment variables; keep `S
 
 - **Location first**, optional **5-digit zip** fallback; pull-to-refresh when location or zip is available.
 - **Navigation bar hidden** so the title scrolls with content; full-width grouped layout.
-- **Data sources for run index** — opens a screen with **Apple Health** status, **Whoop** connect/disconnect and **Use for run index**, and **Oura** token + toggle. Third-party APIs affect the score only when enabled; **Apple Health** is always read when the user has granted access (baseline when Whoop/Oura are off).
-- **Run index** — environmental score with tier styling (green / amber / red); can be adjusted by **wearable readiness** when data exists.
+- **Top edge treatment:** a taller **frosted / grouped-background gradient** under the status bar (time, Dynamic Island, cellular/Wi‑Fi) so scrolling content does not wash out system chrome—aligned in spirit with the Route tab’s bottom **ultra-thin material** card.
+- **Data sources for run index** — **Apple Health** read-access summary, **Whoop** (credentials + connect + **Use for run index**), **Oura** token + toggle, and a link to **Map data sources (Strava)**. Third-party APIs affect the score only when enabled; **Apple Health** is read when the user has granted access (baseline when Whoop/Oura are off for the index).
+- **Migrations at launch (`StrideCheckApp`):** `WearableRunIndexPreferences.applyMigrationIfNeeded()` — if a Whoop or Oura token already exists (Keychain or non-placeholder plist), the matching **Use for run index** toggle defaults **on**. `StravaMapOverlayPreferences.applyMigrationIfNeeded()` — if a Strava access token already exists, **Show Strava routes on map** defaults **on** once.
+- **Run index** — environmental score with tier styling (green / amber / red); adjusted by **wearable readiness** when data exists.
+- **Hint banner:** when there is **no personal signal** for the index (no usable Health samples for the pipeline and no third-party slice) **and** both Whoop and Oura are **off** for the run index, an inline banner links to **Data sources** so users know how to fix denied Health or disabled wearables.
 - **Wearables & readiness** — rows for data source, readiness score, sleep, HRV, strain proxy; explanatory bullets may be added to the run index list.
+- **Auto-refresh after wearables:** when Whoop **connects** or **disconnects**, Oura token is **saved** or **removed**, or **Use for run index** toggles change, the app posts `strideCheckReloadConditionsSnapshot` and **refetches** conditions if a **coordinate** or valid **zip** is available—no need to pull-to-refresh for run metrics alone.
 - **Route awareness** — daylight, weather, air quality, NWS alerts, and **optional** third-party **crime-incident density** (with explicit disclaimers: incomplete, delayed, not a substitute for judgment or official safety resources).
 - **Right now** / **Air & comfort** / **Next 12 hours** / **Active alerts**.
 - **Offline:** last successful snapshot is stored under Application Support; if a fetch fails and nothing is in memory, the cache loads. A banner shows when you are viewing a **cached** copy.
+
+### Conditions fetch behavior (implementation)
+
+- **Overlapping loads** (e.g. pull-to-refresh plus a new GPS fix) use a monotonic **load sequence** so only the **latest** fetch updates `snapshot`, `errorMessage`, and `isLoading`—avoids stale data overwriting newer results and stuck spinners.
+- **Cancellation** (`CancellationError`, `URLError.cancelled`) from superseded tasks is **not** shown as a user-visible error.
 
 ### Notifications
 
@@ -95,7 +104,7 @@ Use your CI system’s **secret store** for those environment variables; keep `S
 - Map uses **`MKMapView` with `showsTraffic`** so **Apple’s live traffic** colors appear where MapKit provides them (Option A).
 - Map centered on the last conditions coordinate; link to **state 511** (or FHWA directory fallback).
 - **State DOT geometry (Option C):** for selected states, the app requests **GeoJSON** from curated **ArcGIS FeatureServer** layers (`StateTrafficOverlayFeeds.swift`) using a bbox around your map center. Results render as **orange** polylines and **orange** incident-style markers. Feeds break or move; extend the registry as needed. States without a registry entry rely on traffic + 511 only.
-- Optional **Strava**: connect on this tab to overlay **purple** polylines for recent runs/walks. **Teal** marker is the conditions location.
+- **Strava:** the bottom card includes **Map data sources** (NavigationLink) for credentials, OAuth, the **Show Strava routes on map** switch, and **Refresh routes**. **Purple** polylines appear only when the user has opted in and is signed in. **Teal** marker is the conditions location.
 
 ## Corporate proxy (Zscaler / SSL inspection)
 
