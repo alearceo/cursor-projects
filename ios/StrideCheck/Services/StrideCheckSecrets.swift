@@ -44,6 +44,22 @@ enum StrideCheckSecrets {
             .flatMap(trimmed) ?? "stridecheck://strava-oauth"
     }
 
+    static var garminConsumerKey: String? {
+        trimmed(KeychainCredentialStore.string(for: .garminOAuthConsumerKey))
+            ?? trimmed(Bundle.main.object(forInfoDictionaryKey: "GarminConsumerKey") as? String)
+    }
+
+    static var garminConsumerSecret: String? {
+        trimmed(KeychainCredentialStore.string(for: .garminOAuthConsumerSecret))
+            ?? trimmed(Bundle.main.object(forInfoDictionaryKey: "GarminConsumerSecret") as? String)
+    }
+
+    /// Must match the Garmin Connect Developer app (scheme `stridecheck`, path `garmin-oauth`).
+    static var garminRedirectURI: String {
+        (Bundle.main.object(forInfoDictionaryKey: "GarminRedirectURI") as? String)
+            .flatMap(trimmed) ?? "stridecheck://garmin-oauth"
+    }
+
     private static func trimmed(_ s: String?) -> String? {
         let t = s?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         return t.isEmpty ? nil : t

@@ -5,3 +5,6 @@
 
 # Local API secrets (copy from ios/Config/Secrets.xcconfig.template)
 ios/Config/Secrets.xcconfig
+
+# Agent/local xcodebuild -derivedDataPath
+ios/.derivedData/

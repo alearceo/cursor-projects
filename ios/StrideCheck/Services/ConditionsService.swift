@@ -65,8 +65,12 @@ struct ConditionsService {
         let crimeResult = await crimeSummary
         let wearableResult = await wearable
 
+        // Run index = ScoreEngine (+ wearables) only; AwarenessEngine below adds a separate score from night, NWS alerts, and crime—those do not change the run index.
         let envScore = ScoreEngine.compute(
             apparentF: weatherResult.current.apparentTemperature,
+            dryBulbF: weatherResult.current.temperature2m,
+            relativeHumidity: weatherResult.current.relativeHumidity2m,
+            windSpeedMph: weatherResult.current.windSpeed10m,
             gustMph: weatherResult.current.windGusts10m,
             weatherCode: weatherResult.current.weatherCode,
             usAQI: airResult?.current?.usAQI
@@ -74,12 +78,14 @@ struct ConditionsService {
         let merged = ScoreEngine.applyWearable(
             baseScore: envScore.score,
             bullets: envScore.bullets,
+            comfortRows: envScore.comfortRows,
             wearable: wearableResult
         )
         let verdict = ScoreEngine.verdict(for: merged.score)
 
         let noThirdPartyForRunIndex = !WearableRunIndexPreferences.includeWhoopInRunIndex
             && !WearableRunIndexPreferences.includeOuraInRunIndex
+            && !WearableRunIndexPreferences.includeGarminInRunIndex
         let showRunIndexDataSourcesHint = noThirdPartyForRunIndex
             && wearableResult.sourceLabel == WearableReadinessAggregator.noWearableSignalSourceLabel
 
@@ -282,24 +288,59 @@ private enum WeatherCode {
 }
 
 private enum ScoreEngine {
-    static func compute(apparentF: Double?, gustMph: Double?, weatherCode: Int?, usAQI: Double?) -> (score: Int, bullets: [String]) {
+    static func compute(
+        apparentF: Double?,
+        dryBulbF: Double?,
+        relativeHumidity: Double?,
+        windSpeedMph: Double?,
+        gustMph: Double?,
+        weatherCode: Int?,
+        usAQI: Double?
+    ) -> (score: Int, bullets: [String], comfortRows: [(String, String)]) {
         var score = 100
         var bullets: [String] = []
 
-        if let f = apparentF {
-            if f >= 95 {
-                score -= 30
-                bullets.append("Very hot feels-like; hydrate and reduce effort.")
-            } else if f >= 88 {
-                score -= 22
-                bullets.append("High heat load; prioritize shade and fluids.")
-            } else if f <= 14 {
-                score -= 28
-                bullets.append("Bitter cold; cover skin and watch for slick surfaces.")
-            } else if f <= 28 {
-                score -= 16
-                bullets.append("Freezing possible; be careful on bridges and painted lines.")
-            }
+        let stress = HeatColdStress.effectiveFeelsLikeForRunIndex(
+            apparentF: apparentF,
+            dryBulbF: dryBulbF,
+            relativeHumidityPercent: relativeHumidity,
+            windSpeedMph: windSpeedMph
+        )
+        let f = stress.effectiveF
+
+        if f >= 100 {
+            score -= 34
+            bullets.append("Extreme effective heat; avoid hard efforts and seek shade.")
+        } else if f >= 95 {
+            score -= 30
+            bullets.append("Very hot effective temperature; hydrate and reduce effort.")
+        } else if f >= 90 {
+            score -= 26
+            bullets.append("Strong heat stress; slow pace and carry fluids.")
+        } else if f >= 88 {
+            score -= 22
+            bullets.append("High heat load; prioritize shade and fluids.")
+        } else if f >= 82 {
+            score -= 12
+            bullets.append("Warm/humid effective conditions; expect higher perceived effort.")
+        } else if f >= 75 {
+            score -= 4
+            bullets.append("Mild warmth; still monitor hydration on long runs.")
+        } else if f <= 0 {
+            score -= 34
+            bullets.append("Dangerous cold effective temperature; limit exposed skin.")
+        } else if f <= 10 {
+            score -= 30
+            bullets.append("Severe cold stress; bundle and watch footing.")
+        } else if f <= 14 {
+            score -= 28
+            bullets.append("Bitter cold; cover skin and watch for slick surfaces.")
+        } else if f <= 28 {
+            score -= 16
+            bullets.append("Freezing possible; be careful on bridges and painted lines.")
+        } else if f <= 40 {
+            score -= 8
+            bullets.append("Cool effective air; gloves or layers may help.")
         }
 
         if let gust = gustMph {
@@ -348,17 +389,18 @@ private enum ScoreEngine {
             bullets.append("Conditions look favorable for a city run.")
         }
 
-        return (max(0, min(100, score)), bullets)
+        return (max(0, min(100, score)), bullets, stress.comfortRows)
     }
 
     static func applyWearable(
         baseScore: Int,
         bullets: [String],
+        comfortRows: [(String, String)],
         wearable: WearableRunReadiness
     ) -> (score: Int, bullets: [String], rows: [(String, String)]) {
         var score = baseScore
         var b = bullets
-        var rows: [(String, String)] = [("Data source", wearable.sourceLabel)]
+        var rows: [(String, String)] = comfortRows + [("Data source", wearable.sourceLabel)]
 
         let hasSignal = wearable.readinessScore0to100 != nil
             || wearable.sleepHours != nil

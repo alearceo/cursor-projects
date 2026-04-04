@@ -18,6 +18,11 @@ enum KeychainCredentialStore {
         case stravaAccessToken = "strava.access"
         case stravaRefreshToken = "strava.refresh"
         case stravaExpiryEpoch = "strava.expiry"
+        case garminOAuthConsumerKey = "garmin.oauth.consumer_key"
+        case garminOAuthConsumerSecret = "garmin.oauth.consumer_secret"
+        case garminAccessToken = "garmin.access"
+        case garminRefreshToken = "garmin.refresh"
+        case garminExpiryEpoch = "garmin.expiry"
     }
 
     static func set(_ value: String, for key: Key) {
@@ -80,5 +85,18 @@ enum KeychainCredentialStore {
             return
         }
         set(String(date.timeIntervalSince1970), for: .stravaExpiryEpoch)
+    }
+
+    static func garminExpiry() -> Date? {
+        guard let s = string(for: .garminExpiryEpoch), let t = TimeInterval(s) else { return nil }
+        return Date(timeIntervalSince1970: t)
+    }
+
+    static func setGarminExpiry(_ date: Date?) {
+        guard let date else {
+            delete(.garminExpiryEpoch)
+            return
+        }
+        set(String(date.timeIntervalSince1970), for: .garminExpiryEpoch)
     }
 }

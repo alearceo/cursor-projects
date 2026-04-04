@@ -1,10 +1,12 @@
 import SwiftUI
 
-/// Central screen (Option C): Apple Health status, Whoop / Oura connection, and **Use for run index** toggles.
+/// Central screen (Option C): Apple Health status, Whoop / Oura / Garmin, and **Use for run index** toggles.
 struct WearableDataSourcesView: View {
     @EnvironmentObject private var whoopLink: WhoopLinkViewModel
+    @EnvironmentObject private var garminLink: GarminLinkViewModel
     @AppStorage("stridecheck.includeWhoopInRunIndex") private var includeWhoop = false
     @AppStorage("stridecheck.includeOuraInRunIndex") private var includeOura = false
+    @AppStorage("stridecheck.includeGarminInRunIndex") private var includeGarmin = false
 
     @State private var healthSummary = "Checking Health access…"
     @State private var ouraDraft = ""
@@ -14,6 +16,10 @@ struct WearableDataSourcesView: View {
     @State private var whoopSecretDraft = ""
     @State private var whoopCredentialsConfigured = false
     @State private var whoopFooterNote: String?
+    @State private var garminConsumerKeyDraft = ""
+    @State private var garminConsumerSecretDraft = ""
+    @State private var garminCredentialsConfigured = false
+    @State private var garminFooterNote: String?
 
     var body: some View {
         List {
@@ -132,6 +138,80 @@ struct WearableDataSourcesView: View {
             }
 
             Section {
+                Toggle("Use for run index", isOn: $includeGarmin)
+                    .disabled(!garminLink.isConnected)
+                TextField("Consumer Key", text: $garminConsumerKeyDraft)
+                    .textContentType(.username)
+                    .autocorrectionDisabled()
+                    .textInputAutocapitalization(.never)
+                SecureField("Consumer Secret", text: $garminConsumerSecretDraft)
+                    .textContentType(.password)
+                    .autocorrectionDisabled()
+                    .textInputAutocapitalization(.never)
+                Button("Save credentials to Keychain") {
+                    saveGarminCredentials()
+                }
+                .disabled(
+                    garminConsumerKeyDraft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                        || garminConsumerSecretDraft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                )
+                if KeychainCredentialStore.string(for: .garminOAuthConsumerKey) != nil,
+                   KeychainCredentialStore.string(for: .garminOAuthConsumerSecret) != nil {
+                    Button("Remove Keychain credentials", role: .destructive) {
+                        removeGarminKeychainCredentials()
+                    }
+                }
+                Group {
+                    if garminLink.isConnected {
+                        Text("Connected to Garmin Health API.")
+                    } else if garminCredentialsConfigured {
+                        Text("Credentials are set. Tap Connect Garmin to finish OAuth (PKCE).")
+                    } else {
+                        Text("Requires a Garmin Connect Developer Program app; enter Consumer Key and Secret here or via build settings.")
+                    }
+                }
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                HStack(spacing: 12) {
+                    if garminLink.isConnected {
+                        Button("Disconnect") {
+                            garminLink.disconnect()
+                        }
+                        .buttonStyle(.bordered)
+                    } else {
+                        Button {
+                            Task { await garminLink.connect() }
+                        } label: {
+                            if garminLink.isBusy {
+                                ProgressView()
+                            } else {
+                                Text("Connect Garmin")
+                            }
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .disabled(garminLink.isBusy || !garminCredentialsConfigured)
+                    }
+                }
+            } header: {
+                Text("Garmin")
+            } footer: {
+                VStack(alignment: .leading, spacing: 6) {
+                    if let note = garminFooterNote {
+                        Text(note)
+                            .font(.caption)
+                    }
+                    if let err = garminLink.lastError {
+                        Text(err)
+                            .font(.caption)
+                            .foregroundStyle(.red)
+                    }
+                    Text("Register redirect \(StrideCheckSecrets.garminRedirectURI) in your Garmin developer app. Sleep, stress (mapped to readiness), and HRV from dailies feed the run index when enabled. Data sync via Apple Health still works without this.")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
+            }
+
+            Section {
                 NavigationLink {
                     MapDataSourcesView()
                 } label: {
@@ -152,11 +232,41 @@ struct WearableDataSourcesView: View {
         .onChange(of: includeOura) { _, _ in
             ConditionsSnapshotReload.request()
         }
+        .onChange(of: includeGarmin) { _, _ in
+            ConditionsSnapshotReload.request()
+        }
         .onAppear {
             whoopLink.refreshConnectionState()
+            garminLink.refreshConnectionState()
             syncOuraConfigured()
             syncWhoopCredentialsConfigured()
+            syncGarminCredentialsConfigured()
         }
+    }
+
+    private func syncGarminCredentialsConfigured() {
+        garminCredentialsConfigured = StrideCheckSecrets.garminConsumerKey != nil
+            && StrideCheckSecrets.garminConsumerSecret != nil
+    }
+
+    private func saveGarminCredentials() {
+        let k = garminConsumerKeyDraft.trimmingCharacters(in: .whitespacesAndNewlines)
+        let s = garminConsumerSecretDraft.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !k.isEmpty, !s.isEmpty else { return }
+        KeychainCredentialStore.set(k, for: .garminOAuthConsumerKey)
+        KeychainCredentialStore.set(s, for: .garminOAuthConsumerSecret)
+        garminConsumerKeyDraft = ""
+        garminConsumerSecretDraft = ""
+        syncGarminCredentialsConfigured()
+        garminFooterNote = "Saved to Keychain. Tap Connect Garmin to sign in."
+    }
+
+    private func removeGarminKeychainCredentials() {
+        KeychainCredentialStore.delete(.garminOAuthConsumerKey)
+        KeychainCredentialStore.delete(.garminOAuthConsumerSecret)
+        garminLink.disconnect()
+        syncGarminCredentialsConfigured()
+        garminFooterNote = "Keychain credentials removed. Values from Info.plist still apply if your build defines them."
     }
 
     private func syncWhoopCredentialsConfigured() {

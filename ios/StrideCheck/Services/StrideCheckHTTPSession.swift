@@ -16,6 +16,9 @@ private func strideCheckHostAllowed(_ rawHost: String) -> Bool {
     if host == "api.prod.whoop.com" { return true }
     if host == "www.strava.com" { return true }
     if host == "strava.com" { return true }
+    if host == "connect.garmin.com" { return true }
+    if host == "diauth.garmin.com" { return true }
+    if host == "apis.garmin.com" { return true }
     if host == "arcgis.com" || host.hasSuffix(".arcgis.com") { return true }
     if host.hasSuffix(".dot.gov") { return true }
     if host.hasSuffix("wsdot.wa.gov") { return true }

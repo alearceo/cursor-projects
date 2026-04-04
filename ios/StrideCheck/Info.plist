@@ -36,7 +36,7 @@
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>StrideCheck uses your location to detect local running conditions automatically.</string>
 	<key>NSHealthShareUsageDescription</key>
-	<string>StrideCheck reads sleep, heart rate variability, and activity from Apple Health to adjust your run readiness when Oura, Whoop, or Apple Watch data is present.</string>
+	<string>StrideCheck reads sleep, heart rate variability, and activity from Apple Health to adjust your run readiness when Garmin, Oura, Whoop, or Apple Watch data is present.</string>
 	<key>NSHealthUpdateUsageDescription</key>
 	<string>StrideCheck does not write to Apple Health.</string>
 	<key>OuraPersonalAccessToken</key>
@@ -55,6 +55,12 @@
 	<string>$(STRAVA_CLIENT_SECRET)</string>
 	<key>StravaRedirectURI</key>
 	<string>stridecheck://strava-oauth</string>
+	<key>GarminConsumerKey</key>
+	<string>$(GARMIN_CONSUMER_KEY)</string>
+	<key>GarminConsumerSecret</key>
+	<string>$(GARMIN_CONSUMER_SECRET)</string>
+	<key>GarminRedirectURI</key>
+	<string>stridecheck://garmin-oauth</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSExceptionDomains</key>
@@ -123,6 +129,15 @@
 				<false/>
 			</dict>
 			<key>arcgis.com</key>
+			<dict>
+				<key>NSIncludesSubdomains</key>
+				<true/>
+				<key>NSExceptionRequiresForwardSecrecy</key>
+				<false/>
+				<key>NSRequiresCertificateTransparency</key>
+				<false/>
+			</dict>
+			<key>garmin.com</key>
 			<dict>
 				<key>NSIncludesSubdomains</key>
 				<true/>

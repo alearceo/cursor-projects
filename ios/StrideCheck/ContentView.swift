@@ -7,6 +7,7 @@ struct ContentView: View {
     @StateObject private var vm = ConditionsViewModel()
     @StateObject private var locationService = LocationService()
     @StateObject private var whoopLink = WhoopLinkViewModel()
+    @StateObject private var garminLink = GarminLinkViewModel()
     @StateObject private var stravaLink = StravaLinkViewModel()
     @AppStorage("stridecheck.notifyRunWindows") private var notifyStrongWindows = false
     @State private var selectedTab = 0
@@ -26,11 +27,13 @@ struct ContentView: View {
             .tag(1)
         }
         .environmentObject(whoopLink)
+        .environmentObject(garminLink)
         .environmentObject(stravaLink)
         .tint(.teal)
         .task {
             locationService.requestAccessAndLocation()
             whoopLink.refreshConnectionState()
+            garminLink.refreshConnectionState()
             stravaLink.refreshConnectionState()
         }
         .onReceive(locationService.$coordinate.compactMap { $0 }) { coordinate in

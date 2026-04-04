@@ -3,8 +3,10 @@ import Foundation
 /// User opt-in for third-party APIs affecting the run index. Apple Health is always read when authorized (baseline).
 enum WearableRunIndexPreferences {
     private static let migratedKey = "stridecheck.wearableRunIndexPrefsMigrated"
+    private static let garminToggleMigratedKey = "stridecheck.garminRunIndexToggleMigrated"
     private static let includeWhoopKey = "stridecheck.includeWhoopInRunIndex"
     private static let includeOuraKey = "stridecheck.includeOuraInRunIndex"
+    private static let includeGarminKey = "stridecheck.includeGarminInRunIndex"
 
     /// One-time migration: if credentials already exist, default toggles **on** so behavior matches pre–data-sources builds.
     static func applyMigrationIfNeeded() {
@@ -29,6 +31,15 @@ enum WearableRunIndexPreferences {
         UserDefaults.standard.set(true, forKey: migratedKey)
     }
 
+    /// One-time: if a Garmin token already exists, turn **Use for run index** on (separate from the original Whoop/Oura migration).
+    static func applyGarminToggleMigrationIfNeeded() {
+        guard !UserDefaults.standard.bool(forKey: garminToggleMigratedKey) else { return }
+        if KeychainCredentialStore.string(for: .garminAccessToken) != nil {
+            UserDefaults.standard.set(true, forKey: includeGarminKey)
+        }
+        UserDefaults.standard.set(true, forKey: garminToggleMigratedKey)
+    }
+
     static var includeWhoopInRunIndex: Bool {
         get { UserDefaults.standard.bool(forKey: includeWhoopKey) }
         set { UserDefaults.standard.set(newValue, forKey: includeWhoopKey) }
@@ -37,5 +48,10 @@ enum WearableRunIndexPreferences {
     static var includeOuraInRunIndex: Bool {
         get { UserDefaults.standard.bool(forKey: includeOuraKey) }
         set { UserDefaults.standard.set(newValue, forKey: includeOuraKey) }
+    }
+
+    static var includeGarminInRunIndex: Bool {
+        get { UserDefaults.standard.bool(forKey: includeGarminKey) }
+        set { UserDefaults.standard.set(newValue, forKey: includeGarminKey) }
     }
 }
