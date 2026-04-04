@@ -14,7 +14,6 @@
 		AA0000000000000000000005 /* LocationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000015 /* LocationService.swift */; };
 		AA0000000000000000000006 /* ConditionsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000016 /* ConditionsViewModel.swift */; };
 		AA0000000000000000000007 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000018 /* Assets.xcassets */; };
-		AA0000000000000000000112 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000113 /* LaunchScreen.storyboard */; };
 		AA0000000000000000000008 /* StrideCheckHTTPSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000019 /* StrideCheckHTTPSession.swift */; };
 		AA0000000000000000000101 /* SnapshotCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000104 /* SnapshotCache.swift */; };
 		AA0000000000000000000102 /* RunWindowNotifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000105 /* RunWindowNotifier.swift */; };
@@ -24,6 +23,7 @@
 		AA000000000000000000010B /* WearableReadinessAggregator.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000010C /* WearableReadinessAggregator.swift */; };
 		AA000000000000000000010D /* CrimeIncidentsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000010E /* CrimeIncidentsService.swift */; };
 		AA000000000000000000010F /* HealthKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000110 /* HealthKit.framework */; };
+		AA0000000000000000000112 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000113 /* LaunchScreen.storyboard */; };
 		AA0000000000000000000114 /* AuthenticationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000115 /* AuthenticationServices.framework */; };
 		AA0000000000000000000116 /* KeychainCredentialStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000117 /* KeychainCredentialStore.swift */; };
 		AA0000000000000000000118 /* StrideCheckSecrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000119 /* StrideCheckSecrets.swift */; };
@@ -68,13 +68,19 @@
 		};
 /* End PBXContainerItemProxy section */
 
-/* Begin PBXTargetDependency section */
-		AA0000000000000000000241 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = AA0000000000000000000236 /* StrideCheckRunIndexWidget */;
-			targetProxy = AA0000000000000000000240 /* PBXContainerItemProxy */;
+/* Begin PBXCopyFilesBuildPhase section */
+		AA0000000000000000000234 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				AA0000000000000000000235 /* StrideCheckRunIndexWidget.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
 		};
-/* End PBXTargetDependency section */
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		AA0000000000000000000010 /* StrideCheck.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = StrideCheck.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -97,7 +103,6 @@
 		AA0000000000000000000110 /* HealthKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = HealthKit.framework; path = System/Library/Frameworks/HealthKit.framework; sourceTree = SDKROOT; };
 		AA0000000000000000000111 /* StrideCheck.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = StrideCheck.entitlements; sourceTree = "<group>"; };
 		AA0000000000000000000113 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
-		AA0000000000000000000122 /* BuildConfig.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = BuildConfig.xcconfig; sourceTree = "<group>"; };
 		AA0000000000000000000115 /* AuthenticationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AuthenticationServices.framework; path = System/Library/Frameworks/AuthenticationServices.framework; sourceTree = SDKROOT; };
 		AA0000000000000000000117 /* KeychainCredentialStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainCredentialStore.swift; sourceTree = "<group>"; };
 		AA0000000000000000000119 /* StrideCheckSecrets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StrideCheckSecrets.swift; sourceTree = "<group>"; };
@@ -105,6 +110,7 @@
 		AA000000000000000000011D /* WhoopAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhoopAPIClient.swift; sourceTree = "<group>"; };
 		AA000000000000000000011F /* TrafficOverlayLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrafficOverlayLoader.swift; sourceTree = "<group>"; };
 		AA0000000000000000000121 /* WhoopLinkViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhoopLinkViewModel.swift; sourceTree = "<group>"; };
+		AA0000000000000000000122 /* BuildConfig.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = BuildConfig.xcconfig; sourceTree = "<group>"; };
 		AA0000000000000000000124 /* EncodedPolylineDecoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncodedPolylineDecoder.swift; sourceTree = "<group>"; };
 		AA0000000000000000000126 /* StravaOAuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StravaOAuthService.swift; sourceTree = "<group>"; };
 		AA0000000000000000000128 /* StravaAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StravaAPIClient.swift; sourceTree = "<group>"; };
@@ -152,25 +158,13 @@
 		};
 /* End PBXFrameworksBuildPhase section */
 
-/* Begin PBXCopyFilesBuildPhase section */
-		AA0000000000000000000234 /* Embed Foundation Extensions */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 13;
-			files = (
-				AA0000000000000000000235 /* StrideCheckRunIndexWidget.appex in Embed Foundation Extensions */,
-			);
-			name = "Embed Foundation Extensions";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXCopyFilesBuildPhase section */
-
 /* Begin PBXGroup section */
 		680425BF2F805055008C36E8 /* Recovered References */ = {
 			isa = PBXGroup;
 			children = (
 				AA0000000000000000000110 /* HealthKit.framework */,
+				AA0000000000000000000115 /* AuthenticationServices.framework */,
+				AA0000000000000000000156 /* WidgetKit.framework */,
 			);
 			name = "Recovered References";
 			sourceTree = "<group>";
@@ -212,27 +206,6 @@
 				AA0000000000000000000146 /* StrideCheckRunIndexWidget.appex */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		AA0000000000000000000245 /* StrideCheckRunIndexWidget */ = {
-			isa = PBXGroup;
-			children = (
-				AA0000000000000000000147 /* RunIndexWidget.swift */,
-				AA0000000000000000000148 /* RunIndexWidgetEntryView.swift */,
-				AA0000000000000000000154 /* Info.plist */,
-				AA0000000000000000000155 /* StrideCheckRunIndexWidget.entitlements */,
-			);
-			path = StrideCheckRunIndexWidget;
-			sourceTree = "<group>";
-		};
-		AA0000000000000000000246 /* WidgetShared */ = {
-			isa = PBXGroup;
-			children = (
-				AA0000000000000000000149 /* AppGroup.swift */,
-				AA0000000000000000000150 /* RunIndexWidgetPayload.swift */,
-				AA0000000000000000000151 /* RunIndexTier.swift */,
-			);
-			path = WidgetShared;
 			sourceTree = "<group>";
 		};
 		AA0000000000000000000033 /* Services */ = {
@@ -278,6 +251,27 @@
 				AA000000000000000000012A /* StravaLinkViewModel.swift */,
 			);
 			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		AA0000000000000000000245 /* StrideCheckRunIndexWidget */ = {
+			isa = PBXGroup;
+			children = (
+				AA0000000000000000000147 /* RunIndexWidget.swift */,
+				AA0000000000000000000148 /* RunIndexWidgetEntryView.swift */,
+				AA0000000000000000000154 /* Info.plist */,
+				AA0000000000000000000155 /* StrideCheckRunIndexWidget.entitlements */,
+			);
+			path = StrideCheckRunIndexWidget;
+			sourceTree = "<group>";
+		};
+		AA0000000000000000000246 /* WidgetShared */ = {
+			isa = PBXGroup;
+			children = (
+				AA0000000000000000000149 /* AppGroup.swift */,
+				AA0000000000000000000150 /* RunIndexWidgetPayload.swift */,
+				AA0000000000000000000151 /* RunIndexTier.swift */,
+			);
+			path = WidgetShared;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -435,6 +429,14 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		AA0000000000000000000241 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = AA0000000000000000000236 /* StrideCheckRunIndexWidget */;
+			targetProxy = AA0000000000000000000240 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
 		AA0000000000000000000060 /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -557,6 +559,8 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
+				WHOOP_CLIENT_ID = "15180130-f7ca-4578-a72e-7e30ef87f3c2";
+				WHOOP_CLIENT_SECRET = 4e5b91a2d2f30d2ad1f0c4d441bcea84840b261d7ef0e56fed635aeb9be0bdd7;
 			};
 			name = Debug;
 		};
@@ -582,6 +586,8 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
+				WHOOP_CLIENT_ID = "15180130-f7ca-4578-a72e-7e30ef87f3c2";
+				WHOOP_CLIENT_SECRET = 4e5b91a2d2f30d2ad1f0c4d441bcea84840b261d7ef0e56fed635aeb9be0bdd7;
 			};
 			name = Release;
 		};

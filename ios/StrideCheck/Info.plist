@@ -54,7 +54,7 @@
 	<key>StravaClientSecret</key>
 	<string>$(STRAVA_CLIENT_SECRET)</string>
 	<key>StravaRedirectURI</key>
-	<string>stridecheck://strava-oauth</string>
+	<string>stridecheck://localhost/strava-oauth</string>
 	<key>GarminConsumerKey</key>
 	<string>$(GARMIN_CONSUMER_KEY)</string>
 	<key>GarminConsumerSecret</key>

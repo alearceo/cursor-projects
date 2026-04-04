@@ -38,10 +38,11 @@ enum StrideCheckSecrets {
             ?? trimmed(Bundle.main.object(forInfoDictionaryKey: "StravaClientSecret") as? String)
     }
 
-    /// Must match Strava application settings and `CFBundleURLTypes` (e.g. `stridecheck://strava-oauth`).
+    /// Must match Strava **My API Application**: use **Authorization Callback Domain** `localhost` and this full URI as the OAuth `redirect_uri`.
+    /// Custom scheme + `localhost` host satisfies Strava’s domain rules; `ASWebAuthenticationSession` still uses callback scheme `stridecheck` only.
     static var stravaRedirectURI: String {
         (Bundle.main.object(forInfoDictionaryKey: "StravaRedirectURI") as? String)
-            .flatMap(trimmed) ?? "stridecheck://strava-oauth"
+            .flatMap(trimmed) ?? "stridecheck://localhost/strava-oauth"
     }
 
     static var garminConsumerKey: String? {

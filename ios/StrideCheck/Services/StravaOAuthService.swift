@@ -46,6 +46,8 @@ private struct StravaTokenResponse: Decodable {
 }
 
 /// OAuth 2.0 authorization code flow for [Strava](https://developers.strava.com/docs/authentication/).
+///
+/// Strava’s API app settings require an Authorization Callback Domain (hostname). Use `localhost` with redirect `stridecheck://localhost/...` so the host matches; `ASWebAuthenticationSession` still uses callback scheme `stridecheck` only.
 @MainActor
 enum StravaOAuthService {
     private static let authURL = URL(string: "https://www.strava.com/oauth/authorize")!

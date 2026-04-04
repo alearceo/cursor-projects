@@ -95,7 +95,7 @@ struct MapDataSourcesView: View {
                             .font(.caption)
                             .foregroundStyle(.red)
                     }
-                    Text("Register this redirect URI in your Strava application: \(StrideCheckSecrets.stravaRedirectURI). Keychain values override StravaClientId / StravaClientSecret from Info.plist when both are saved.")
+                    Text("In Strava API settings, set Authorization Callback Domain to localhost and register this redirect URI (must match exactly): \(StrideCheckSecrets.stravaRedirectURI). Keychain values override StravaClientId / StravaClientSecret from Info.plist when both are saved.")
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                 }
