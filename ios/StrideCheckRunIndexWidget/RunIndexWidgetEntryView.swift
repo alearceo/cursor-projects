@@ -42,14 +42,19 @@ struct RunIndexWidgetEntryView: View {
 
     private var smallHomeContent: some View {
         VStack(alignment: .leading, spacing: 6) {
-            HStack(alignment: .firstTextBaseline, spacing: 10) {
+            HStack(alignment: .center, spacing: 8) {
                 Text("\(entry.payload.score)")
-                    .font(.system(size: 36, weight: .bold, design: .rounded))
+                    .font(.system(size: 34, weight: .bold, design: .rounded))
                     .foregroundStyle(accent)
-                VStack(alignment: .leading, spacing: 2) {
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
+                    .layoutPriority(1)
+                VStack(alignment: .leading, spacing: 3) {
                     Text("Run Index")
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.85)
                     Text(entry.payload.tierLabel)
                         .font(.caption2.weight(.bold))
                         .padding(.horizontal, 6)
@@ -62,15 +67,19 @@ struct RunIndexWidgetEntryView: View {
             Text(entry.payload.contextLine)
                 .font(.caption2)
                 .foregroundStyle(.secondary)
+                .multilineTextAlignment(.leading)
                 .lineLimit(3)
                 .minimumScaleFactor(0.85)
+                .frame(maxWidth: .infinity, alignment: .leading)
             Text(entry.payload.placeName)
                 .font(.caption2)
                 .foregroundStyle(.tertiary)
                 .lineLimit(1)
+                .minimumScaleFactor(0.8)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .padding(4)
+        .padding(EdgeInsets(top: 10, leading: 12, bottom: 10, trailing: 12))
     }
 
     private var circularContent: some View {

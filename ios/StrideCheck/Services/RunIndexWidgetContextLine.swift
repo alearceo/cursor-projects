@@ -1,12 +1,12 @@
 import Foundation
 
-/// One-line summary for the Run Index widget (environment + wearable hint).
+/// Short summary for the Run Index widget (environment + wearable hint). Uses a newline between clauses so the widget wraps on a predictable break instead of mid-phrase.
 enum RunIndexWidgetContextLine {
     static func build(from snap: ConditionsSnapshot) -> String {
         let env = environmentClause(snap)
         let body = bodyClause(snap)
         if body.isEmpty { return env }
-        return "\(env) · \(body)"
+        return "\(env)\n\(body)"
     }
 
     private static func environmentClause(_ snap: ConditionsSnapshot) -> String {
