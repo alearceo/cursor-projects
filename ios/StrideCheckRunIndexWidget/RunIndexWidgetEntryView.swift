@@ -21,6 +21,15 @@ struct RunIndexWidgetEntryView: View {
             }
         }
         .widgetURL(Self.deepLink)
+        .containerBackground(for: .widget) {
+            switch family {
+            case .accessoryCircular, .accessoryRectangular, .accessoryInline:
+                AccessoryWidgetBackground()
+            default:
+                ContainerRelativeShape()
+                    .fill(.background)
+            }
+        }
     }
 
     private var accent: Color {
@@ -65,15 +74,12 @@ struct RunIndexWidgetEntryView: View {
     }
 
     private var circularContent: some View {
-        ZStack {
-            AccessoryWidgetBackground()
-            VStack(spacing: 0) {
-                Text("\(entry.payload.score)")
-                    .font(.system(.title2, design: .rounded).weight(.bold))
-                Text(String(entry.payload.tierLabel.prefix(1)))
-                    .font(.caption2.weight(.bold))
-                    .foregroundStyle(.secondary)
-            }
+        VStack(spacing: 0) {
+            Text("\(entry.payload.score)")
+                .font(.system(.title2, design: .rounded).weight(.bold))
+            Text(String(entry.payload.tierLabel.prefix(1)))
+                .font(.caption2.weight(.bold))
+                .foregroundStyle(.secondary)
         }
     }
 
