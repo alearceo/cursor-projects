@@ -88,12 +88,12 @@ struct RunIndexWidgetEntryView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .padding(EdgeInsets(top: 4, leading: 4, bottom: 4, trailing: 4))
+        .padding(EdgeInsets(top: 2, leading: 2, bottom: 2, trailing: 2))
     }
 
     /// Primary hero block: tall bar, large score, then label + pill on the second line.
     private var runIndexHero: some View {
-        HStack(alignment: .top, spacing: 8) {
+        HStack(alignment: .top, spacing: 6) {
             RoundedRectangle(cornerRadius: 2)
                 .fill(runIndexAccent)
                 .frame(width: 3)
@@ -150,13 +150,13 @@ struct RunIndexWidgetEntryView: View {
     private func tierPill(text: String, color: Color) -> some View {
         Text(text)
             .font(.caption2.weight(.bold))
-            .padding(.horizontal, 7)
+            .padding(.horizontal, 5)
             .padding(.vertical, 3)
             .background(color.opacity(colorScheme == .dark ? 0.28 : 0.16))
             .foregroundStyle(color)
             .clipShape(Capsule())
             .lineLimit(1)
-            .minimumScaleFactor(0.8)
+            .minimumScaleFactor(0.85)
     }
 
     // MARK: - Accessory / lock-screen variants
