@@ -72,7 +72,7 @@ struct RunIndexWidgetEntryView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .padding(EdgeInsets(top: 5, leading: 6, bottom: 4, trailing: 4))
+        .padding(EdgeInsets(top: 4, leading: 4, bottom: 4, trailing: 3))
     }
 
     // MARK: - Main face (page 1)
@@ -129,61 +129,49 @@ struct RunIndexWidgetEntryView: View {
         }
     }
 
-    // MARK: - Detail mode (pages 2–5, intent-driven, no TabView / ScrollView)
+    // MARK: - Detail mode (pages 2–5)
+    // Tap anywhere on the page advances to the next page (ZStack: full-area button behind X close).
 
     private func detailContent(page: Int) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
-            // Header row: section title + X close
-            HStack(alignment: .center, spacing: 0) {
-                detailPageTitle(for: page)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                Button(intent: CloseRunIndexWidgetDetailIntent()) {
-                    Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 15, weight: .semibold))
-                        .foregroundStyle(.secondary)
-                        .frame(minWidth: 28, minHeight: 28)
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel("Back to run index")
-            }
-            .padding(.bottom, 4)
+        ZStack(alignment: .topTrailing) {
+            // Full-area tap advances to next page
+            Button(intent: RunIndexWidgetNextPageIntent()) {
+                VStack(alignment: .leading, spacing: 0) {
+                    // Section title — leave gap on the right for the X
+                    detailPageTitle(for: page)
+                        .padding(.trailing, 18)
+                        .padding(.bottom, 5)
 
-            // Page-specific content
-            detailPageBody(for: page)
-                .frame(maxWidth: .infinity, alignment: .topLeading)
+                    detailPageBody(for: page)
+                        .frame(maxWidth: .infinity, alignment: .topLeading)
 
-            Spacer(minLength: 0)
+                    Spacer(minLength: 0)
 
-            // Bottom nav: ‹ dots ›
-            HStack(spacing: 6) {
-                Button(intent: RunIndexWidgetPrevPageIntent()) {
-                    Image(systemName: "chevron.left")
-                        .font(.caption2.weight(.semibold))
-                        .foregroundStyle(.secondary)
-                        .frame(minWidth: 22, minHeight: 22)
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-
-                HStack(spacing: 5) {
-                    ForEach(0..<RunIndexWidgetState.detailPageCount, id: \.self) { i in
-                        Circle()
-                            .fill(i == page ? Color.primary.opacity(0.75) : Color.secondary.opacity(0.3))
-                            .frame(width: 5, height: 5)
+                    // Page dots (no chevrons)
+                    HStack(spacing: 5) {
+                        ForEach(0..<RunIndexWidgetState.detailPageCount, id: \.self) { i in
+                            Circle()
+                                .fill(i == page ? Color.primary.opacity(0.75) : Color.secondary.opacity(0.3))
+                                .frame(width: 5, height: 5)
+                        }
                     }
+                    .frame(maxWidth: .infinity, alignment: .center)
                 }
-
-                Button(intent: RunIndexWidgetNextPageIntent()) {
-                    Image(systemName: "chevron.right")
-                        .font(.caption2.weight(.semibold))
-                        .foregroundStyle(.secondary)
-                        .frame(minWidth: 22, minHeight: 22)
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                .contentShape(Rectangle())
             }
-            .frame(maxWidth: .infinity, alignment: .center)
+            .buttonStyle(.plain)
+
+            // X close — sits on top, intercepts taps in the corner
+            Button(intent: CloseRunIndexWidgetDetailIntent()) {
+                Text("✕")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(.secondary)
+                    .frame(minWidth: 22, minHeight: 22)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Back to run index")
         }
     }
 
