@@ -7,6 +7,7 @@ enum RunIndexWidgetExporter {
     /// Publishes the latest snapshot for the Run Index widget and asks WidgetKit to reload.
     static func publish(_ snapshot: ConditionsSnapshot) {
         let tier = RunIndexTier(score: snapshot.score)
+        let awarenessTier = RunIndexTier(score: snapshot.awarenessScore)
         let payload = RunIndexWidgetPayload(
             score: snapshot.score,
             verdict: snapshot.verdict,
@@ -18,7 +19,9 @@ enum RunIndexWidgetExporter {
             bullets: snapshot.bullets,
             wearableRows: snapshot.wearableRows.map { WidgetRowPair(key: $0.0, value: $0.1) },
             currentRows: snapshot.currentRows.map { WidgetRowPair(key: $0.0, value: $0.1) },
-            airRows: snapshot.airRows.map { WidgetRowPair(key: $0.0, value: $0.1) }
+            airRows: snapshot.airRows.map { WidgetRowPair(key: $0.0, value: $0.1) },
+            awarenessScore: snapshot.awarenessScore,
+            awarenessTierLabel: awarenessTier.label
         )
         RunIndexWidgetPayload.save(payload)
         #if canImport(WidgetKit)

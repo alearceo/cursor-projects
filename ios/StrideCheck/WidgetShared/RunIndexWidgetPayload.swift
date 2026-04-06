@@ -20,10 +20,14 @@ struct RunIndexWidgetPayload: Codable, Equatable, Sendable {
     var wearableRows: [WidgetRowPair]
     var currentRows: [WidgetRowPair]
     var airRows: [WidgetRowPair]
+    /// Route awareness score (0–100) and tier label (same bands as run index).
+    var awarenessScore: Int
+    var awarenessTierLabel: String
 
     enum CodingKeys: String, CodingKey {
         case score, verdict, tierLabel, tier, contextLine, placeName, updatedAt
         case bullets, wearableRows, currentRows, airRows
+        case awarenessScore, awarenessTierLabel
     }
 
     init(
@@ -37,7 +41,9 @@ struct RunIndexWidgetPayload: Codable, Equatable, Sendable {
         bullets: [String] = [],
         wearableRows: [WidgetRowPair] = [],
         currentRows: [WidgetRowPair] = [],
-        airRows: [WidgetRowPair] = []
+        airRows: [WidgetRowPair] = [],
+        awarenessScore: Int = 0,
+        awarenessTierLabel: String = "—"
     ) {
         self.score = score
         self.verdict = verdict
@@ -50,6 +56,8 @@ struct RunIndexWidgetPayload: Codable, Equatable, Sendable {
         self.wearableRows = wearableRows
         self.currentRows = currentRows
         self.airRows = airRows
+        self.awarenessScore = awarenessScore
+        self.awarenessTierLabel = awarenessTierLabel
     }
 
     init(from decoder: Decoder) throws {
@@ -65,6 +73,8 @@ struct RunIndexWidgetPayload: Codable, Equatable, Sendable {
         wearableRows = try c.decodeIfPresent([WidgetRowPair].self, forKey: .wearableRows) ?? []
         currentRows = try c.decodeIfPresent([WidgetRowPair].self, forKey: .currentRows) ?? []
         airRows = try c.decodeIfPresent([WidgetRowPair].self, forKey: .airRows) ?? []
+        awarenessScore = try c.decodeIfPresent(Int.self, forKey: .awarenessScore) ?? 0
+        awarenessTierLabel = try c.decodeIfPresent(String.self, forKey: .awarenessTierLabel) ?? "—"
     }
 
     func encode(to encoder: Encoder) throws {
@@ -80,6 +90,8 @@ struct RunIndexWidgetPayload: Codable, Equatable, Sendable {
         try c.encode(wearableRows, forKey: .wearableRows)
         try c.encode(currentRows, forKey: .currentRows)
         try c.encode(airRows, forKey: .airRows)
+        try c.encode(awarenessScore, forKey: .awarenessScore)
+        try c.encode(awarenessTierLabel, forKey: .awarenessTierLabel)
     }
 
     static let storageKey = "runIndexWidget.payload.v1"
@@ -116,7 +128,9 @@ struct RunIndexWidgetPayload: Codable, Equatable, Sendable {
             ],
             airRows: [
                 WidgetRowPair(key: "US AQI", value: "32")
-            ]
+            ],
+            awarenessScore: 72,
+            awarenessTierLabel: "Mixed"
         )
     }
 }

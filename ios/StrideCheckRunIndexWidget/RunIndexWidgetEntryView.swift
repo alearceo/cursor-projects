@@ -54,7 +54,19 @@ struct RunIndexWidgetEntryView: View {
     }
 
     private var accent: Color {
-        switch entry.payload.tier {
+        tierAccent(entry.payload.tier)
+    }
+
+    private var awarenessTierKind: RunIndexTierKind {
+        RunIndexTierKind(score: entry.payload.awarenessScore)
+    }
+
+    private var awarenessAccent: Color {
+        tierAccent(awarenessTierKind)
+    }
+
+    private func tierAccent(_ tier: RunIndexTierKind) -> Color {
+        switch tier {
         case .good:     return Color(red: 0.2, green: 0.72, blue: 0.38)
         case .moderate: return Color(red: 0.95, green: 0.76, blue: 0.2)
         case .poor:     return Color(red: 0.92, green: 0.32, blue: 0.28)
@@ -77,11 +89,15 @@ struct RunIndexWidgetEntryView: View {
 
     // MARK: - Main face (page 1)
 
+    /// Option A: dual columns — Run Index | Route awareness — with info top-trailing.
     private var homeFaceContent: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack(alignment: .top) {
-                mainScoreAndTier
-                Spacer(minLength: 0)
+            HStack(alignment: .top, spacing: 6) {
+                HStack(alignment: .top, spacing: 8) {
+                    homeRunIndexColumn
+                    homeRouteColumn
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
                 Button(intent: OpenRunIndexWidgetDetailIntent()) {
                     Image(systemName: "info.circle")
                         .font(.system(size: 14, weight: .semibold))
@@ -103,31 +119,54 @@ struct RunIndexWidgetEntryView: View {
         }
     }
 
-    private var mainScoreAndTier: some View {
-        VStack(alignment: .leading, spacing: 6) {
+    private var homeRunIndexColumn: some View {
+        VStack(alignment: .leading, spacing: 4) {
             Text("\(entry.payload.score)")
-                .font(.system(size: 42, weight: .bold, design: .rounded))
+                .font(.system(size: 32, weight: .bold, design: .rounded))
                 .foregroundStyle(accent)
                 .lineLimit(1)
-                .minimumScaleFactor(0.55)
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Run Index")
-                    .font(.callout.weight(.semibold))
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.75)
-                Text(entry.payload.tierLabel)
-                    .font(.callout.weight(.bold))
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(accent.opacity(colorScheme == .dark ? 0.25 : 0.2))
-                    .foregroundStyle(accent)
-                    .clipShape(Capsule())
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.7)
-            }
+                .minimumScaleFactor(0.5)
+            Text("Run Index")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
+            Text(entry.payload.tierLabel)
+                .font(.caption2.weight(.bold))
+                .padding(.horizontal, 7)
+                .padding(.vertical, 3)
+                .background(accent.opacity(colorScheme == .dark ? 0.25 : 0.2))
+                .foregroundStyle(accent)
+                .clipShape(Capsule())
+                .lineLimit(1)
+                .minimumScaleFactor(0.65)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var homeRouteColumn: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text("\(entry.payload.awarenessScore)")
+                .font(.system(size: 32, weight: .bold, design: .rounded))
+                .foregroundStyle(awarenessAccent)
+                .lineLimit(1)
+                .minimumScaleFactor(0.5)
+            Text("Route")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
+            Text(entry.payload.awarenessTierLabel)
+                .font(.caption2.weight(.bold))
+                .padding(.horizontal, 7)
+                .padding(.vertical, 3)
+                .background(awarenessAccent.opacity(colorScheme == .dark ? 0.25 : 0.2))
+                .foregroundStyle(awarenessAccent)
+                .clipShape(Capsule())
+                .lineLimit(1)
+                .minimumScaleFactor(0.65)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     // MARK: - Detail mode (pages 2–5)
