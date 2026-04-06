@@ -88,7 +88,7 @@ struct RunIndexWidgetEntryView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .padding(EdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 8))
+        .padding(EdgeInsets(top: 4, leading: 4, bottom: 4, trailing: 4))
     }
 
     /// Primary hero block: tall bar, large score, then label + pill on the second line.
@@ -112,8 +112,8 @@ struct RunIndexWidgetEntryView: View {
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
                         .layoutPriority(1)
-                    Spacer(minLength: 4)
                     tierPill(text: entry.payload.tierLabel, color: runIndexAccent)
+                    Spacer(minLength: 0)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -121,7 +121,7 @@ struct RunIndexWidgetEntryView: View {
         .fixedSize(horizontal: false, vertical: true)
     }
 
-    /// Secondary compact strip: bar · score · "Route" label · pill (score-first per user request).
+    /// Secondary compact strip: bar · score · "Route" label · pill, all left-aligned.
     private var routeStrip: some View {
         HStack(alignment: .center, spacing: 6) {
             RoundedRectangle(cornerRadius: 2)
@@ -133,17 +133,17 @@ struct RunIndexWidgetEntryView: View {
                 .monospacedDigit()
                 .foregroundStyle(routeAccent)
                 .lineLimit(1)
-                .fixedSize()
+                .layoutPriority(2)
 
             Text("Route")
                 .font(.caption2.weight(.semibold))
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
-                .fixedSize()
-
-            Spacer(minLength: 4)
+                .layoutPriority(1)
 
             tierPill(text: entry.payload.awarenessTierLabel, color: routeAccent)
+
+            Spacer(minLength: 0)
         }
     }
 
