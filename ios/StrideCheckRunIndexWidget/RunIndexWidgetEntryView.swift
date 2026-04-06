@@ -72,22 +72,13 @@ struct RunIndexWidgetEntryView: View {
 
     private var smallHomeContent: some View {
         VStack(alignment: .leading, spacing: 0) {
-            metricRow(
-                barColor: runIndexAccent,
-                score: entry.payload.score,
-                label: "Run Index",
-                tierLabel: entry.payload.tierLabel
-            )
-            .padding(.bottom, 8)
-
-            metricRow(
-                barColor: routeAccent,
-                score: entry.payload.awarenessScore,
-                label: "Route",
-                tierLabel: entry.payload.awarenessTierLabel
-            )
+            runIndexHero
 
             Spacer(minLength: 6)
+
+            routeStrip
+
+            Spacer(minLength: 5)
 
             Text(entry.payload.placeName)
                 .font(.caption2.weight(.medium))
@@ -100,42 +91,69 @@ struct RunIndexWidgetEntryView: View {
         .padding(EdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 8))
     }
 
-    private func metricRow(
-        barColor: Color,
-        score: Int,
-        label: String,
-        tierLabel: String
-    ) -> some View {
-        HStack(alignment: .center, spacing: 10) {
+    /// Primary hero block: tall bar, large score, label + pill on second line.
+    private var runIndexHero: some View {
+        HStack(alignment: .top, spacing: 8) {
             RoundedRectangle(cornerRadius: 2)
-                .fill(barColor)
-                .frame(width: 3, height: 34)
+                .fill(runIndexAccent)
+                .frame(width: 3)
+                .frame(maxHeight: .infinity)
 
-            Text("\(score)")
-                .font(.system(size: 28, weight: .bold, design: .rounded))
-                .monospacedDigit()
-                .foregroundStyle(barColor)
-                .lineLimit(1)
-                .minimumScaleFactor(0.6)
-                .frame(width: 42, alignment: .leading)
+            VStack(alignment: .leading, spacing: 4) {
+                Text("\(entry.payload.score)")
+                    .font(.system(size: 38, weight: .bold, design: .rounded))
+                    .monospacedDigit()
+                    .foregroundStyle(runIndexAccent)
+                    .lineLimit(1)
 
-            Text(label)
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.primary.opacity(0.75))
-                .lineLimit(1)
-                .minimumScaleFactor(0.75)
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-            Text(tierLabel)
-                .font(.caption2.weight(.bold))
-                .padding(.horizontal, 7)
-                .padding(.vertical, 3)
-                .background(barColor.opacity(colorScheme == .dark ? 0.28 : 0.16))
-                .foregroundStyle(barColor)
-                .clipShape(Capsule())
-                .lineLimit(1)
-                .minimumScaleFactor(0.65)
+                HStack(spacing: 6) {
+                    Text("Run Index")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                    Spacer(minLength: 4)
+                    tierPill(text: entry.payload.tierLabel, color: runIndexAccent, size: .caption2)
+                }
+            }
         }
+        .fixedSize(horizontal: false, vertical: true)
+    }
+
+    /// Secondary compact strip: bar, label, score, pill all on one line.
+    private var routeStrip: some View {
+        HStack(alignment: .center, spacing: 6) {
+            RoundedRectangle(cornerRadius: 2)
+                .fill(routeAccent)
+                .frame(width: 3, height: 14)
+
+            Text("Route")
+                .font(.caption2.weight(.semibold))
+                .foregroundStyle(.secondary)
+
+            Text("\(entry.payload.awarenessScore)")
+                .font(.system(size: 16, weight: .bold, design: .rounded))
+                .monospacedDigit()
+                .foregroundStyle(routeAccent)
+                .lineLimit(1)
+
+            Spacer(minLength: 4)
+
+            tierPill(text: entry.payload.awarenessTierLabel, color: routeAccent, size: .caption2)
+        }
+    }
+
+    private enum PillTextSize { case caption, caption2 }
+
+    private func tierPill(text: String, color: Color, size: PillTextSize) -> some View {
+        let font: Font = size == .caption ? .caption.weight(.bold) : .caption2.weight(.bold)
+        return Text(text)
+            .font(font)
+            .padding(.horizontal, 7)
+            .padding(.vertical, 3)
+            .background(color.opacity(colorScheme == .dark ? 0.28 : 0.16))
+            .foregroundStyle(color)
+            .clipShape(Capsule())
+            .lineLimit(1)
+            .minimumScaleFactor(0.75)
     }
 
     // MARK: - Accessory / lock-screen variants
