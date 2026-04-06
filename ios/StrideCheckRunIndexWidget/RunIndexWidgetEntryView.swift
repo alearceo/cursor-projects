@@ -22,7 +22,9 @@ struct RunIndexWidgetEntryView: View {
                 smallHomeContent
             }
         }
-        .widgetURL(Self.deepLink)
+        /// Omit the deep link while the home widget is in detail mode so `widgetURL` does not fight
+        /// interactive `Button(intent:)` / layout (avoids the yellow “forbidden” render failure).
+        .strideCheckWidgetDeepLink(entry: entry, family: family, url: Self.deepLink)
         .containerBackground(for: .widget) {
             switch family {
             case .accessoryCircular, .accessoryRectangular, .accessoryInline:
@@ -61,7 +63,7 @@ struct RunIndexWidgetEntryView: View {
         }
     }
 
-    /// Page 1 only until the user taps the info control; then a scrollable detail stack (summary + rows).
+    /// Page 1 only until the user taps the info control; then Carrot-style horizontal pages (2–5) with system page dots.
     private var smallHomeContent: some View {
         Group {
             if entry.showDetailPages {
@@ -91,21 +93,18 @@ struct RunIndexWidgetEntryView: View {
         }
     }
 
-    /// Detail mode: `TabView` + page style is not supported in WidgetKit and triggers the yellow “forbidden” placeholder.
-    /// Use a vertical scroll with the same sections (Summary → wearables → conditions → air).
+    /// Pages 2–5: horizontal paging like Carrot (system `TabView` page style + dots). Close stays top-trailing.
+    /// Avoid `ScrollView` / `indexViewStyle(.page)` here — those contributed to WidgetKit’s yellow failure overlay.
     private var detailPagesContent: some View {
-        ZStack(alignment: .topTrailing) {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 12) {
-                    widgetSummaryPage
-                    widgetRowsSection(title: "Wearables & readiness", rows: entry.payload.wearableRows)
-                    widgetRowsSection(title: "Right Now", rows: entry.payload.currentRows)
-                    widgetRowsSection(title: "Air & Comfort", rows: entry.payload.airRows)
-                }
-                .frame(maxWidth: .infinity, alignment: .topLeading)
-            }
-            .padding(.trailing, 22)
-
+        TabView {
+            detailSummaryPage
+            detailWearablesPage
+            detailRightNowPage
+            detailAirPage
+        }
+        .tabViewStyle(.page(indexDisplayMode: .always))
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .overlay(alignment: .topTrailing) {
             Button(intent: CloseRunIndexWidgetDetailIntent()) {
                 Image(systemName: "xmark.circle.fill")
                     .font(.system(size: 15, weight: .semibold))
@@ -115,7 +114,50 @@ struct RunIndexWidgetEntryView: View {
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Back to run index")
+            .padding(.trailing, 2)
+            .padding(.top, 0)
         }
+    }
+
+    /// Page 2 — Summary
+    private var detailSummaryPage: some View {
+        widgetSummaryPage
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .padding(.trailing, 22)
+    }
+
+    /// Page 3 — Wearables
+    private var detailWearablesPage: some View {
+        widgetRowsSection(
+            title: "Wearables & readiness",
+            rows: Array(entry.payload.wearableRows.prefix(detailRowLimit))
+        )
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .padding(.trailing, 22)
+    }
+
+    /// Page 4 — Right now
+    private var detailRightNowPage: some View {
+        widgetRowsSection(
+            title: "Right Now",
+            rows: Array(entry.payload.currentRows.prefix(detailRowLimit))
+        )
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .padding(.trailing, 22)
+    }
+
+    /// Page 5 — Air
+    private var detailAirPage: some View {
+        widgetRowsSection(
+            title: "Air & Comfort",
+            rows: Array(entry.payload.airRows.prefix(detailRowLimit))
+        )
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .padding(.trailing, 22)
+    }
+
+    private var detailRowLimit: Int {
+        family == .systemSmall ? 4 : 8
     }
 
     /// Page 0: score, Run Index, tier, location (no in-widget link to the app info sheet).
@@ -139,6 +181,7 @@ struct RunIndexWidgetEntryView: View {
                     .font(.caption)
                     .foregroundStyle(.primary)
                     .multilineTextAlignment(.leading)
+                    .lineLimit(family == .systemSmall ? 3 : 6)
                     .minimumScaleFactor(0.78)
             }
             if !entry.payload.verdict.isEmpty {
@@ -147,7 +190,7 @@ struct RunIndexWidgetEntryView: View {
                     .foregroundStyle(.primary)
                     .minimumScaleFactor(0.85)
             }
-            ForEach(Array(entry.payload.bullets.prefix(6).enumerated()), id: \.offset) { _, bullet in
+            ForEach(Array(entry.payload.bullets.prefix(family == .systemSmall ? 3 : 6).enumerated()), id: \.offset) { _, bullet in
                 Text("• \(bullet)")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
@@ -299,5 +342,25 @@ struct RunIndexWidgetEntryView: View {
 
     private var inlineContent: some View {
         Text("Run \(entry.payload.score) · \(entry.payload.tierLabel)")
+    }
+}
+
+private extension View {
+    /// Skips `widgetURL` on the home-screen widget while detail mode is active so taps don’t conflict with intents.
+    @ViewBuilder
+    func strideCheckWidgetDeepLink(entry: RunIndexEntry, family: WidgetFamily, url: URL) -> some View {
+        let isAccessoryFamily: Bool = {
+            switch family {
+            case .accessoryCircular, .accessoryRectangular, .accessoryInline:
+                return true
+            default:
+                return false
+            }
+        }()
+        if entry.showDetailPages && !isAccessoryFamily {
+            self
+        } else {
+            self.widgetURL(url)
+        }
     }
 }
