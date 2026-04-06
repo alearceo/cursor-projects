@@ -13,7 +13,6 @@ struct ContentView: View {
     @StateObject private var stravaLink = StravaLinkViewModel()
     @AppStorage("stridecheck.notifyRunWindows") private var notifyStrongWindows = false
     @State private var selectedTab = 0
-    @State private var showWidgetInfoSheet = false
     /// Throttles refetch when the scene becomes active (returning from background). Seeded in `.task` so cold launch does not immediately duplicate `onChange(.active)`.
     @State private var lastForegroundConditionsRefreshAt = Date(timeIntervalSince1970: 0)
 
@@ -53,17 +52,6 @@ struct ContentView: View {
         .onOpenURL { url in
             guard url.scheme == "stridecheck", url.host == "run-index" else { return }
             selectedTab = 0
-            let wantsInfo = URLComponents(url: url, resolvingAgainstBaseURL: false)?
-                .queryItems?
-                .contains { item in
-                    item.name == "info" && (item.value == "1" || item.value?.lowercased() == "true")
-                } == true
-            if wantsInfo {
-                showWidgetInfoSheet = true
-            }
-        }
-        .sheet(isPresented: $showWidgetInfoSheet) {
-            WidgetInfoDetailSheet(snapshot: vm.snapshot)
         }
         .onChange(of: scenePhase) { _, newPhase in
             guard newPhase == .active else { return }
@@ -975,119 +963,5 @@ struct RouteAnd511View: View {
     private func recenterMap() {
         guard let c = coordinate else { return }
         mapRegion = MKCoordinateRegion(center: c, latitudinalMeters: 4500, longitudinalMeters: 4500)
-    }
-}
-
-/// Shown when the user opens `stridecheck://run-index?info=1` from the widget info control.
-private struct WidgetInfoDetailSheet: View {
-    @Environment(\.dismiss) private var dismiss
-    let snapshot: ConditionsSnapshot?
-
-    var body: some View {
-        NavigationStack {
-            ScrollView {
-                if let snap = snapshot {
-                    LazyVStack(alignment: .leading, spacing: 16) {
-                        widgetInfoSummaryCard(snap)
-                        widgetInfoRowsCard(title: "Wearables & readiness", rows: snap.wearableRows)
-                        widgetInfoRowsCard(title: "Right Now", rows: snap.currentRows)
-                        widgetInfoRowsCard(title: "Air & Comfort", rows: snap.airRows)
-                    }
-                    .padding(16)
-                } else {
-                    VStack(spacing: 16) {
-                        if let cached = RunIndexWidgetPayload.load(), !cached.contextLine.isEmpty {
-                            widgetInfoContextOnlyCard(cached.contextLine)
-                        }
-                        ContentUnavailableView(
-                            "No live snapshot",
-                            systemImage: "figure.run",
-                            description: Text("Open the Conditions tab and load your area for full details.")
-                        )
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(16)
-                }
-            }
-            .background(Color(uiColor: .systemGroupedBackground))
-            .navigationTitle("Widget details")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Done") { dismiss() }
-                }
-            }
-        }
-    }
-
-    private func widgetInfoSummaryCard(_ snap: ConditionsSnapshot) -> some View {
-        let summary = RunIndexWidgetContextLine.build(from: snap)
-        return VStack(alignment: .leading, spacing: 12) {
-            Text("Summary")
-                .font(.caption)
-                .textCase(.uppercase)
-                .foregroundStyle(.secondary)
-            if !summary.isEmpty {
-                Text(summary)
-                    .font(.subheadline)
-                    .foregroundStyle(.primary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            if !snap.verdict.isEmpty {
-                Text(snap.verdict)
-                    .font(.headline)
-            }
-            if !snap.bullets.isEmpty {
-                VStack(alignment: .leading, spacing: 6) {
-                    ForEach(snap.bullets.prefix(8), id: \.self) { bullet in
-                        Text("• \(bullet)")
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-            }
-        }
-        .padding(16)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(uiColor: .secondarySystemGroupedBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 14))
-    }
-
-    private func widgetInfoContextOnlyCard(_ contextLine: String) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Last widget summary")
-                .font(.caption)
-                .textCase(.uppercase)
-                .foregroundStyle(.secondary)
-            Text(contextLine)
-                .font(.subheadline)
-                .foregroundStyle(.primary)
-                .fixedSize(horizontal: false, vertical: true)
-        }
-        .padding(16)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(uiColor: .secondarySystemGroupedBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 14))
-    }
-
-    private func widgetInfoRowsCard(title: String, rows: [(String, String)]) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text(title)
-                .font(.caption)
-                .textCase(.uppercase)
-                .foregroundStyle(.secondary)
-            ForEach(Array(rows.enumerated()), id: \.offset) { _, row in
-                HStack {
-                    Text(row.0).foregroundStyle(.secondary)
-                    Spacer()
-                    Text(row.1).bold()
-                }
-                .font(.subheadline)
-            }
-        }
-        .padding(16)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(uiColor: .secondarySystemGroupedBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 14))
     }
 }

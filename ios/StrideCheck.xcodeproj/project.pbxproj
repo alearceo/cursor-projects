@@ -58,6 +58,9 @@
 		AA0000000000000000000218 /* RunIndexWidgetEntryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000148 /* RunIndexWidgetEntryView.swift */; };
 		AA0000000000000000000219 /* AppGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000149 /* AppGroup.swift */; };
 		AA0000000000000000000220 /* RunIndexWidgetPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000150 /* RunIndexWidgetPayload.swift */; };
+		AA0000000000000000000264 /* RunIndexWidgetState.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000166 /* RunIndexWidgetState.swift */; };
+		AA0000000000000000000265 /* RunIndexWidgetState.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000166 /* RunIndexWidgetState.swift */; };
+		AA0000000000000000000266 /* RunIndexWidgetIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000167 /* RunIndexWidgetIntents.swift */; };
 		AA0000000000000000000221 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000156 /* WidgetKit.framework */; };
 		AA0000000000000000000235 /* StrideCheckRunIndexWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000146 /* StrideCheckRunIndexWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
@@ -135,6 +138,8 @@
 		AA0000000000000000000149 /* AppGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppGroup.swift; sourceTree = "<group>"; };
 		AA0000000000000000000150 /* RunIndexWidgetPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunIndexWidgetPayload.swift; sourceTree = "<group>"; };
 		AA0000000000000000000151 /* RunIndexTier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunIndexTier.swift; sourceTree = "<group>"; };
+		AA0000000000000000000166 /* RunIndexWidgetState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunIndexWidgetState.swift; sourceTree = "<group>"; };
+		AA0000000000000000000167 /* RunIndexWidgetIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunIndexWidgetIntents.swift; sourceTree = "<group>"; };
 		AA0000000000000000000152 /* RunIndexWidgetExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunIndexWidgetExporter.swift; sourceTree = "<group>"; };
 		AA0000000000000000000153 /* RunIndexWidgetContextLine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunIndexWidgetContextLine.swift; sourceTree = "<group>"; };
 		AA0000000000000000000160 /* WorkoutRouteIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutRouteIntent.swift; sourceTree = "<group>"; };
@@ -270,6 +275,7 @@
 			children = (
 				AA0000000000000000000147 /* RunIndexWidget.swift */,
 				AA0000000000000000000148 /* RunIndexWidgetEntryView.swift */,
+				AA0000000000000000000167 /* RunIndexWidgetIntents.swift */,
 				AA0000000000000000000154 /* Info.plist */,
 				AA0000000000000000000155 /* StrideCheckRunIndexWidget.entitlements */,
 			);
@@ -282,6 +288,7 @@
 				AA0000000000000000000149 /* AppGroup.swift */,
 				AA0000000000000000000150 /* RunIndexWidgetPayload.swift */,
 				AA0000000000000000000151 /* RunIndexTier.swift */,
+				AA0000000000000000000166 /* RunIndexWidgetState.swift */,
 			);
 			path = WidgetShared;
 			sourceTree = "<group>";
@@ -423,6 +430,7 @@
 				AA0000000000000000000212 /* AppGroup.swift in Sources */,
 				AA0000000000000000000213 /* RunIndexWidgetPayload.swift in Sources */,
 				AA0000000000000000000214 /* RunIndexTier.swift in Sources */,
+				AA0000000000000000000264 /* RunIndexWidgetState.swift in Sources */,
 				AA0000000000000000000215 /* RunIndexWidgetExporter.swift in Sources */,
 				AA0000000000000000000216 /* RunIndexWidgetContextLine.swift in Sources */,
 				AA0000000000000000000260 /* WorkoutRouteIntent.swift in Sources */,
@@ -438,8 +446,10 @@
 			files = (
 				AA0000000000000000000217 /* RunIndexWidget.swift in Sources */,
 				AA0000000000000000000218 /* RunIndexWidgetEntryView.swift in Sources */,
+				AA0000000000000000000266 /* RunIndexWidgetIntents.swift in Sources */,
 				AA0000000000000000000219 /* AppGroup.swift in Sources */,
 				AA0000000000000000000220 /* RunIndexWidgetPayload.swift in Sources */,
+				AA0000000000000000000265 /* RunIndexWidgetState.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -14,7 +14,11 @@ enum RunIndexWidgetExporter {
             tier: RunIndexTierKind(score: snapshot.score),
             contextLine: RunIndexWidgetContextLine.build(from: snapshot),
             placeName: snapshot.placeName,
-            updatedAt: Date()
+            updatedAt: Date(),
+            bullets: snapshot.bullets,
+            wearableRows: snapshot.wearableRows.map { WidgetRowPair(key: $0.0, value: $0.1) },
+            currentRows: snapshot.currentRows.map { WidgetRowPair(key: $0.0, value: $0.1) },
+            airRows: snapshot.airRows.map { WidgetRowPair(key: $0.0, value: $0.1) }
         )
         RunIndexWidgetPayload.save(payload)
         #if canImport(WidgetKit)

@@ -1,3 +1,4 @@
+import AppIntents
 import SwiftUI
 import WidgetKit
 
@@ -7,8 +8,6 @@ struct RunIndexWidgetEntryView: View {
     var entry: RunIndexEntry
 
     private static let deepLink = URL(string: "stridecheck://run-index")!
-    /// Opens Conditions with the widget details sheet (`?info=1`); same host as default tap, no extra URL scheme.
-    private static let infoURL = URL(string: "stridecheck://run-index?info=1")!
 
     var body: some View {
         Group {
@@ -62,33 +61,139 @@ struct RunIndexWidgetEntryView: View {
         }
     }
 
-    /// Small widget: score + Run Index / tier + location. `systemSmall` uses a vertical stack so the score
-    /// is never squeezed by a sibling with `maxWidth: .infinity` (which caused “…” truncation).
+    /// Page 1 only until the user taps the info control; then pages 2–5 in a TabView (Carrot-style dots).
     private var smallHomeContent: some View {
-        ZStack(alignment: .topTrailing) {
-            Group {
-                switch family {
-                case .systemSmall:
-                    smallHomeVerticalStack
-                default:
-                    smallHomeTwoColumnTop
-                }
+        Group {
+            if entry.showDetailPages {
+                detailPagesContent
+            } else {
+                homeFaceContent
             }
-            /// Keeps text out from under the info control (compact icon in the corner).
-            .padding(.trailing, 18)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .padding(EdgeInsets(top: 5, leading: 6, bottom: 2, trailing: 4))
+    }
 
-            Link(destination: Self.infoURL) {
+    private var homeFaceContent: some View {
+        ZStack(alignment: .topTrailing) {
+            widgetMainPage
+                .padding(.trailing, 20)
+
+            Button(intent: OpenRunIndexWidgetDetailIntent()) {
                 Image(systemName: "info.circle")
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundStyle(.secondary)
                     .frame(minWidth: 28, minHeight: 28)
                     .contentShape(Rectangle())
-                    .accessibilityLabel("Details")
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Show details")
+        }
+    }
+
+    private var detailPagesContent: some View {
+        ZStack(alignment: .topTrailing) {
+            TabView {
+                widgetSummaryPage
+                widgetRowsPage(title: "Wearables & readiness", rows: entry.payload.wearableRows)
+                widgetRowsPage(title: "Right Now", rows: entry.payload.currentRows)
+                widgetRowsPage(title: "Air & Comfort", rows: entry.payload.airRows)
+            }
+            .tabViewStyle(.page(indexDisplayMode: .always))
+            .indexViewStyle(.page(backgroundDisplayMode: .always))
+            .padding(.trailing, 22)
+
+            Button(intent: CloseRunIndexWidgetDetailIntent()) {
+                Image(systemName: "xmark.circle.fill")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(.secondary)
+                    .frame(minWidth: 28, minHeight: 28)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Back to run index")
+        }
+    }
+
+    /// Page 0: score, Run Index, tier, location (no in-widget link to the app info sheet).
+    private var widgetMainPage: some View {
+        Group {
+            switch family {
+            case .systemSmall:
+                smallHomeVerticalStack
+            default:
+                smallHomeTwoColumnTop
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        /// Tight insets (Carrot-style); system widget margins still apply—smaller custom padding reclaims usable width.
-        .padding(EdgeInsets(top: 5, leading: 6, bottom: 5, trailing: 4))
+    }
+
+    private var widgetSummaryPage: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            widgetSectionHeader("Summary")
+            if !entry.payload.contextLine.isEmpty {
+                Text(entry.payload.contextLine)
+                    .font(.caption)
+                    .foregroundStyle(.primary)
+                    .multilineTextAlignment(.leading)
+                    .minimumScaleFactor(0.78)
+            }
+            if !entry.payload.verdict.isEmpty {
+                Text(entry.payload.verdict)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.primary)
+                    .minimumScaleFactor(0.85)
+            }
+            ForEach(Array(entry.payload.bullets.prefix(6).enumerated()), id: \.offset) { _, bullet in
+                Text("• \(bullet)")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.leading)
+                    .minimumScaleFactor(0.8)
+            }
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    }
+
+    private func widgetRowsPage(title: String, rows: [WidgetRowPair]) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            widgetSectionHeader(title)
+            if rows.isEmpty {
+                Text("Open StrideCheck to refresh.")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            } else {
+                ForEach(Array(rows.enumerated()), id: \.offset) { _, row in
+                    HStack(alignment: .firstTextBaseline) {
+                        Text(row.key)
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(2)
+                            .minimumScaleFactor(0.78)
+                        Spacer(minLength: 4)
+                        Text(row.value)
+                            .font(.caption2.weight(.semibold))
+                            .foregroundStyle(.primary)
+                            .multilineTextAlignment(.trailing)
+                            .lineLimit(2)
+                            .minimumScaleFactor(0.78)
+                    }
+                }
+            }
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    }
+
+    private func widgetSectionHeader(_ title: String) -> some View {
+        Text(title)
+            .font(.caption2.weight(.semibold))
+            .foregroundStyle(.secondary)
+            .textCase(.uppercase)
+            .tracking(0.5)
+            .lineLimit(1)
+            .minimumScaleFactor(0.75)
     }
 
     private var runIndexLabelAndTier: some View {
