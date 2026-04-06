@@ -7,7 +7,8 @@ struct RunIndexWidgetEntryView: View {
     var entry: RunIndexEntry
 
     private static let deepLink = URL(string: "stridecheck://run-index")!
-    private static let infoURL = URL(string: "stridecheck://widget-info")!
+    /// Opens Conditions with the widget details sheet (`?info=1`); same host as default tap, no extra URL scheme.
+    private static let infoURL = URL(string: "stridecheck://run-index?info=1")!
 
     var body: some View {
         Group {
@@ -61,44 +62,45 @@ struct RunIndexWidgetEntryView: View {
         }
     }
 
-    /// Small widget: CARROT-style label + value rows; context lives behind the info control in the app.
+    /// Small widget: score + Run Index / tier row, location; context and verdict are in the app info sheet.
     private var smallHomeContent: some View {
         ZStack(alignment: .topTrailing) {
             VStack(alignment: .leading, spacing: 0) {
-                carrotField(label: "Score") {
+                HStack(alignment: .top, spacing: 10) {
                     Text("\(entry.payload.score)")
-                        .font(.system(size: 34, weight: .bold, design: .rounded))
+                        .font(.system(size: 40, weight: .bold, design: .rounded))
                         .foregroundStyle(accent)
                         .lineLimit(1)
-                        .minimumScaleFactor(0.75)
+                        .minimumScaleFactor(0.68)
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Run Index")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                        Text(entry.payload.tierLabel)
+                            .font(.subheadline.weight(.bold))
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 4)
+                            .background(accent.opacity(colorScheme == .dark ? 0.25 : 0.2))
+                            .foregroundStyle(accent)
+                            .clipShape(Capsule())
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                    Spacer(minLength: 0)
                 }
-                carrotField(label: "Run Index") {
-                    Text(entry.payload.verdict)
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.primary)
-                        .lineLimit(2)
-                        .minimumScaleFactor(0.82)
-                        .multilineTextAlignment(.leading)
-                }
-                carrotField(label: "Tier") {
-                    Text(entry.payload.tierLabel)
-                        .font(.caption.weight(.bold))
-                        .padding(.horizontal, 9)
-                        .padding(.vertical, 4)
-                        .background(accent.opacity(colorScheme == .dark ? 0.25 : 0.2))
-                        .foregroundStyle(accent)
-                        .clipShape(Capsule())
-                        .lineLimit(1)
-                }
-                Spacer(minLength: 2)
-                carrotField(label: "Location") {
-                    Text(entry.payload.placeName)
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(.primary)
-                        .lineLimit(2)
-                        .minimumScaleFactor(0.85)
-                        .multilineTextAlignment(.leading)
-                }
+
+                Spacer(minLength: 6)
+
+                Text(entry.payload.placeName)
+                    .font(.caption.weight(.medium))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.85)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
             .padding(.trailing, 26)
 
@@ -108,23 +110,11 @@ struct RunIndexWidgetEntryView: View {
                     .foregroundStyle(.secondary)
                     .accessibilityLabel("Details")
             }
-            .padding(.top, 6)
+            .padding(.top, 4)
             .padding(.trailing, 2)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .padding(EdgeInsets(top: 10, leading: 11, bottom: 10, trailing: 9))
-    }
-
-    private func carrotField<Content: View>(label: String, @ViewBuilder value: () -> Content) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(label)
-                .font(.caption2.weight(.semibold))
-                .foregroundStyle(.secondary)
-                .textCase(.uppercase)
-                .tracking(0.6)
-            value()
-        }
-        .padding(.bottom, 6)
     }
 
     private var circularContent: some View {

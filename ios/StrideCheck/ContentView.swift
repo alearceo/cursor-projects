@@ -51,15 +51,15 @@ struct ContentView: View {
             Task { await reloadConditionsSnapshotIfPossible() }
         }
         .onOpenURL { url in
-            guard url.scheme == "stridecheck" else { return }
-            switch url.host {
-            case "run-index":
-                selectedTab = 0
-            case "widget-info":
-                selectedTab = 0
+            guard url.scheme == "stridecheck", url.host == "run-index" else { return }
+            selectedTab = 0
+            let wantsInfo = URLComponents(url: url, resolvingAgainstBaseURL: false)?
+                .queryItems?
+                .contains { item in
+                    item.name == "info" && (item.value == "1" || item.value?.lowercased() == "true")
+                } == true
+            if wantsInfo {
                 showWidgetInfoSheet = true
-            default:
-                break
             }
         }
         .sheet(isPresented: $showWidgetInfoSheet) {
@@ -978,7 +978,7 @@ struct RouteAnd511View: View {
     }
 }
 
-/// Shown when the user taps the widget’s info control (`stridecheck://widget-info`).
+/// Shown when the user opens `stridecheck://run-index?info=1` from the widget info control.
 private struct WidgetInfoDetailSheet: View {
     @Environment(\.dismiss) private var dismiss
     let snapshot: ConditionsSnapshot?
@@ -988,18 +988,25 @@ private struct WidgetInfoDetailSheet: View {
             ScrollView {
                 if let snap = snapshot {
                     LazyVStack(alignment: .leading, spacing: 16) {
+                        widgetInfoSummaryCard(snap)
                         widgetInfoRowsCard(title: "Wearables & readiness", rows: snap.wearableRows)
                         widgetInfoRowsCard(title: "Right Now", rows: snap.currentRows)
+                        widgetInfoRowsCard(title: "Air & Comfort", rows: snap.airRows)
                     }
                     .padding(16)
                 } else {
-                    ContentUnavailableView(
-                        "No conditions yet",
-                        systemImage: "figure.run",
-                        description: Text("Open the Conditions tab and load your area to see details here.")
-                    )
+                    VStack(spacing: 16) {
+                        if let cached = RunIndexWidgetPayload.load(), !cached.contextLine.isEmpty {
+                            widgetInfoContextOnlyCard(cached.contextLine)
+                        }
+                        ContentUnavailableView(
+                            "No live snapshot",
+                            systemImage: "figure.run",
+                            description: Text("Open the Conditions tab and load your area for full details.")
+                        )
+                    }
                     .frame(maxWidth: .infinity)
-                    .padding(.top, 48)
+                    .padding(16)
                 }
             }
             .background(Color(uiColor: .systemGroupedBackground))
@@ -1011,6 +1018,56 @@ private struct WidgetInfoDetailSheet: View {
                 }
             }
         }
+    }
+
+    private func widgetInfoSummaryCard(_ snap: ConditionsSnapshot) -> some View {
+        let summary = RunIndexWidgetContextLine.build(from: snap)
+        return VStack(alignment: .leading, spacing: 12) {
+            Text("Summary")
+                .font(.caption)
+                .textCase(.uppercase)
+                .foregroundStyle(.secondary)
+            if !summary.isEmpty {
+                Text(summary)
+                    .font(.subheadline)
+                    .foregroundStyle(.primary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            if !snap.verdict.isEmpty {
+                Text(snap.verdict)
+                    .font(.headline)
+            }
+            if !snap.bullets.isEmpty {
+                VStack(alignment: .leading, spacing: 6) {
+                    ForEach(snap.bullets.prefix(8), id: \.self) { bullet in
+                        Text("• \(bullet)")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color(uiColor: .secondarySystemGroupedBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 14))
+    }
+
+    private func widgetInfoContextOnlyCard(_ contextLine: String) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Last widget summary")
+                .font(.caption)
+                .textCase(.uppercase)
+                .foregroundStyle(.secondary)
+            Text(contextLine)
+                .font(.subheadline)
+                .foregroundStyle(.primary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color(uiColor: .secondarySystemGroupedBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 14))
     }
 
     private func widgetInfoRowsCard(title: String, rows: [(String, String)]) -> some View {
