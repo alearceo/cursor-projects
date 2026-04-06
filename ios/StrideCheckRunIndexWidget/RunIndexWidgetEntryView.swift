@@ -60,42 +60,47 @@ struct RunIndexWidgetEntryView: View {
         }
     }
 
+    /// Small widget: score on its own row so “Run Index” + tier never compete with the number for width (avoids “Run In…” / “Stro…” truncation).
     private var smallHomeContent: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(alignment: .center, spacing: 8) {
-                Text("\(entry.payload.score)")
-                    .font(.system(size: 42, weight: .bold, design: .rounded))
-                    .foregroundStyle(accent)
+        VStack(alignment: .leading, spacing: 6) {
+            Text("\(entry.payload.score)")
+                .font(.system(size: 40, weight: .bold, design: .rounded))
+                .foregroundStyle(accent)
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Run Index")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.secondary)
                     .lineLimit(1)
-                    .minimumScaleFactor(0.72)
-                    .layoutPriority(1)
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Run Index")
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.85)
-                    Text(entry.payload.tierLabel)
-                        .font(.caption.weight(.bold))
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 3)
-                        .background(accent.opacity(colorScheme == .dark ? 0.25 : 0.2))
-                        .foregroundStyle(accent)
-                        .clipShape(Capsule())
-                }
+                Text(entry.payload.tierLabel)
+                    .font(.subheadline.weight(.bold))
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(accent.opacity(colorScheme == .dark ? 0.25 : 0.2))
+                    .foregroundStyle(accent)
+                    .clipShape(Capsule())
+                    .lineLimit(1)
+                    .fixedSize(horizontal: true, vertical: false)
             }
+
             Text(entry.payload.contextLine)
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.leading)
-                .lineLimit(4)
+                .lineLimit(3)
                 .minimumScaleFactor(0.82)
                 .frame(maxWidth: .infinity, alignment: .leading)
+
+            Spacer(minLength: 0)
+
             Text(entry.payload.placeName)
                 .font(.caption.weight(.medium))
-                .foregroundStyle(.tertiary)
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)
+                .foregroundStyle(.secondary)
+                .lineLimit(2)
+                .minimumScaleFactor(0.85)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
