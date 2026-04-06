@@ -3,6 +3,7 @@ import WidgetKit
 
 struct RunIndexWidgetEntryView: View {
     @Environment(\.widgetFamily) private var family
+    @Environment(\.colorScheme) private var colorScheme
     var entry: RunIndexEntry
 
     private static let deepLink = URL(string: "stridecheck://run-index")!
@@ -26,9 +27,28 @@ struct RunIndexWidgetEntryView: View {
             case .accessoryCircular, .accessoryRectangular, .accessoryInline:
                 AccessoryWidgetBackground()
             default:
-                ContainerRelativeShape()
-                    .fill(.background)
+                smallWidgetBackground
             }
+        }
+    }
+
+    /// Soft tier-tinted gradient so the widget isn’t flat white/black; text stays readable.
+    private var smallWidgetBackground: some View {
+        let base = colorScheme == .dark
+            ? Color(red: 0.11, green: 0.12, blue: 0.14)
+            : Color(red: 0.97, green: 0.98, blue: 0.99)
+        let wash = accent.opacity(colorScheme == .dark ? 0.28 : 0.16)
+        return ZStack {
+            ContainerRelativeShape()
+                .fill(base)
+            ContainerRelativeShape()
+                .fill(
+                    LinearGradient(
+                        colors: [wash, wash.opacity(0.35), .clear],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
         }
     }
 
@@ -41,45 +61,45 @@ struct RunIndexWidgetEntryView: View {
     }
 
     private var smallHomeContent: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .center, spacing: 8) {
                 Text("\(entry.payload.score)")
-                    .font(.system(size: 34, weight: .bold, design: .rounded))
+                    .font(.system(size: 42, weight: .bold, design: .rounded))
                     .foregroundStyle(accent)
                     .lineLimit(1)
-                    .minimumScaleFactor(0.75)
+                    .minimumScaleFactor(0.72)
                     .layoutPriority(1)
-                VStack(alignment: .leading, spacing: 3) {
+                VStack(alignment: .leading, spacing: 4) {
                     Text("Run Index")
-                        .font(.caption.weight(.semibold))
+                        .font(.subheadline.weight(.semibold))
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
                         .minimumScaleFactor(0.85)
                     Text(entry.payload.tierLabel)
-                        .font(.caption2.weight(.bold))
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(accent.opacity(0.2))
+                        .font(.caption.weight(.bold))
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background(accent.opacity(colorScheme == .dark ? 0.25 : 0.2))
                         .foregroundStyle(accent)
                         .clipShape(Capsule())
                 }
             }
             Text(entry.payload.contextLine)
-                .font(.caption2)
+                .font(.caption)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.leading)
-                .lineLimit(3)
-                .minimumScaleFactor(0.85)
+                .lineLimit(4)
+                .minimumScaleFactor(0.82)
                 .frame(maxWidth: .infinity, alignment: .leading)
             Text(entry.payload.placeName)
-                .font(.caption2)
+                .font(.caption.weight(.medium))
                 .foregroundStyle(.tertiary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .padding(EdgeInsets(top: 10, leading: 12, bottom: 10, trailing: 12))
+        .padding(EdgeInsets(top: 10, leading: 11, bottom: 10, trailing: 11))
     }
 
     private var circularContent: some View {
