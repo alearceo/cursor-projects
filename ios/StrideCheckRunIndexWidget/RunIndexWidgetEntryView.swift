@@ -61,7 +61,7 @@ struct RunIndexWidgetEntryView: View {
         }
     }
 
-    /// Page 1 only until the user taps the info control; then pages 2–5 in a TabView (Carrot-style dots).
+    /// Page 1 only until the user taps the info control; then a scrollable detail stack (summary + rows).
     private var smallHomeContent: some View {
         Group {
             if entry.showDetailPages {
@@ -91,16 +91,19 @@ struct RunIndexWidgetEntryView: View {
         }
     }
 
+    /// Detail mode: `TabView` + page style is not supported in WidgetKit and triggers the yellow “forbidden” placeholder.
+    /// Use a vertical scroll with the same sections (Summary → wearables → conditions → air).
     private var detailPagesContent: some View {
         ZStack(alignment: .topTrailing) {
-            TabView {
-                widgetSummaryPage
-                widgetRowsPage(title: "Wearables & readiness", rows: entry.payload.wearableRows)
-                widgetRowsPage(title: "Right Now", rows: entry.payload.currentRows)
-                widgetRowsPage(title: "Air & Comfort", rows: entry.payload.airRows)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 12) {
+                    widgetSummaryPage
+                    widgetRowsSection(title: "Wearables & readiness", rows: entry.payload.wearableRows)
+                    widgetRowsSection(title: "Right Now", rows: entry.payload.currentRows)
+                    widgetRowsSection(title: "Air & Comfort", rows: entry.payload.airRows)
+                }
+                .frame(maxWidth: .infinity, alignment: .topLeading)
             }
-            .tabViewStyle(.page(indexDisplayMode: .always))
-            .indexViewStyle(.page(backgroundDisplayMode: .always))
             .padding(.trailing, 22)
 
             Button(intent: CloseRunIndexWidgetDetailIntent()) {
@@ -151,12 +154,11 @@ struct RunIndexWidgetEntryView: View {
                     .multilineTextAlignment(.leading)
                     .minimumScaleFactor(0.8)
             }
-            Spacer(minLength: 0)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .frame(maxWidth: .infinity, alignment: .topLeading)
     }
 
-    private func widgetRowsPage(title: String, rows: [WidgetRowPair]) -> some View {
+    private func widgetRowsSection(title: String, rows: [WidgetRowPair]) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             widgetSectionHeader(title)
             if rows.isEmpty {
@@ -181,9 +183,8 @@ struct RunIndexWidgetEntryView: View {
                     }
                 }
             }
-            Spacer(minLength: 0)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .frame(maxWidth: .infinity, alignment: .topLeading)
     }
 
     private func widgetSectionHeader(_ title: String) -> some View {

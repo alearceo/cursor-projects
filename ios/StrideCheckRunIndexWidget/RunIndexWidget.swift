@@ -4,7 +4,7 @@ import WidgetKit
 struct RunIndexEntry: TimelineEntry {
     let date: Date
     let payload: RunIndexWidgetPayload
-    /// When `true`, show swipeable detail pages (2–5); when `false`, show the main run index face only.
+    /// When `true`, show the scrollable detail stack; when `false`, show the main run index face only.
     let showDetailPages: Bool
 }
 
@@ -34,7 +34,7 @@ struct RunIndexNowWidget: Widget {
             RunIndexWidgetEntryView(entry: entry)
         }
         .configurationDisplayName("Run Index")
-        .description("Run index on the first page; tap the info control for detail pages. Tap elsewhere to open the app.")
+        .description("Run index on the first page; tap info for a scrollable summary and conditions. Tap elsewhere to open the app.")
         .supportedFamilies([.systemSmall, .accessoryCircular, .accessoryRectangular, .accessoryInline])
     }
 }
