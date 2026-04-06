@@ -1,5 +1,5 @@
 import Foundation
 
-/// Namespace reserved for future widget state needs.
-/// Pagination was removed; the widget is now a static, single-face display.
+// Pagination was removed from the widget (replaced by a static single-face layout).
+// This namespace is retained as a placeholder for future widget state needs.
 enum RunIndexWidgetState {}

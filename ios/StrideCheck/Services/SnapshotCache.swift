@@ -105,14 +105,17 @@ private struct PersistedConditionsSnapshot: Codable {
 }
 
 enum SnapshotCache {
-    private static var fileURL: URL {
-        let dir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+    private static var fileURL: URL? {
+        guard let dir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else {
+            return nil
+        }
         let folder = dir.appendingPathComponent("StrideCheck", isDirectory: true)
         try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         return folder.appendingPathComponent("last-snapshot.json")
     }
 
     static func save(_ snapshot: ConditionsSnapshot) {
+        guard let fileURL else { return }
         let persisted = PersistedConditionsSnapshot(
             placeName: snapshot.placeName,
             latitude: snapshot.latitude,
@@ -136,12 +139,12 @@ enum SnapshotCache {
             let data = try JSONEncoder().encode(persisted)
             try data.write(to: fileURL, options: .atomic)
         } catch {
-            // Best-effort cache
+            // Best-effort — failure is non-fatal
         }
     }
 
     static func load() -> ConditionsSnapshot? {
-        guard let data = try? Data(contentsOf: fileURL) else { return nil }
+        guard let fileURL, let data = try? Data(contentsOf: fileURL) else { return nil }
         guard let p = try? JSONDecoder().decode(PersistedConditionsSnapshot.self, from: data) else { return nil }
         return ConditionsSnapshot(
             placeName: p.placeName,

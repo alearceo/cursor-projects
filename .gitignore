@@ -20,6 +20,7 @@ build/
 
 # Agent/local xcodebuild -derivedDataPath
 ios/.derivedData/
+ios/.derived/
 
 # CocoaPods / Carthage (if added later)
 Pods/

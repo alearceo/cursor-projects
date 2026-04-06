@@ -31,7 +31,7 @@ struct RunIndexNowWidget: Widget {
         }
         .configurationDisplayName("Run Index")
         .description("Your run index and route awareness at a glance. Tap to open StrideCheck.")
-        .supportedFamilies([.systemSmall, .accessoryCircular, .accessoryRectangular, .accessoryInline])
+        .supportedFamilies([.systemSmall, .systemMedium, .accessoryCircular, .accessoryRectangular, .accessoryInline])
     }
 }
 

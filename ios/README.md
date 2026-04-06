@@ -1,5 +1,19 @@
 # StrideCheck iOS (SwiftUI)
 
+## Recent improvements
+
+| Area | Change |
+|------|--------|
+| **Networking** | Request timeout reduced 45 s → 20 s. `URLSession.dataWithRetry(from:maxAttempts:)` adds exponential back-off (0.5 s → 1 s → 2 s) for transient failures on weather/air APIs. |
+| **Security** | TLS proxy-trust delegate now guarded by `#if DEBUG` — never ships to users in release builds. |
+| **Crash hardening** | `SnapshotCache.fileURL` force-unwrap replaced with a safe optional; save/load degrade gracefully if Application Support is unavailable. |
+| **Widget** | Added **`.systemMedium`** family: two-column layout (Run Index hero left, Route Awareness right, context line, location). All widget variants now have explicit `accessibilityLabel` strings (combined element with full score/tier/location phrase). |
+| **Repository hygiene** | `ios/.derived/` (≈2 000 Xcode build intermediates) untracked from git; `.gitignore` updated. Web prototype (`app.js`, `index.html`, `styles.css`) removed — app is the canonical product. |
+| **Dead code** | `RunIndexWidgetState` and `RunIndexWidgetIntents` files cleaned to minimal stubs; pagination intents fully removed. |
+| **CI** | GitHub Actions workflow at `.github/workflows/ios-ci.yml` — builds + tests on every push to main / feature / widget branches. |
+| **Tests** | Unit test files added under `ios/StrideCheckTests/` (SnapshotCache round-trip, RunIndexWidgetPayload Codable, tier banding). See `ios/StrideCheckTests/README.md` for Xcode target wiring. |
+| **Localization** | `Localizable.xcstrings` (String Catalog) added with all user-visible English strings as a baseline for future i18n. |
+
 Native SwiftUI app for runner-focused conditions: weather, air quality, NWS alerts, a blended **run index** (environment uses **effective heat/cold**—feels-like plus NWS-style heat index and wind chill when applicable—via `HeatColdStress.swift`), optional **wearable readiness** (Apple Health baseline plus opt-in **Whoop**, **Oura**, and **Garmin Health API** for the index), and a **route awareness** index (environment plus optional crime-incident context). **Data sources** screens centralize credentials and toggles; **Strava** map overlays are **opt-in**. Includes a **Run Index** widget (small Home Screen + lock-screen accessories), offline cache, optional local notifications, and a **Route & 511** tab with MapKit and state 511 links.
 
 ## Project layout
@@ -34,7 +48,8 @@ The target uses the **HealthKit** capability. For a **physical device**, the App
 
 ### Run Index widget
 
-- **StrideCheckRunIndexWidget** is embedded in the app and shows the latest **run index** (colored score + Strong/Mixed/Tough) plus a **one-line context** string (environment + wearable recovery hint when data exists). Families: **system small**, **accessory circular**, **accessory rectangular**, **accessory inline** (lock screen / StandBy).
+- **StrideCheckRunIndexWidget** is embedded in the app and shows the latest **run index** (colored score + Strong/Mixed/Tough) plus route awareness. Families: **system small**, **system medium**, **accessory circular**, **accessory rectangular**, **accessory inline** (lock screen / StandBy).
+- **Medium widget layout:** Run Index hero on the left (large score + tier pill + context line + location) separated by a vertical divider from Route Awareness on the right (score + tier pill).
 - The app writes a JSON payload to **shared `UserDefaults`** using App Group **`group.com.alearceo.StrideCheck`**, then calls `WidgetCenter.reloadTimelines(ofKind: "RunIndexNow")`. Enable the **App Groups** capability for **both** the main app and the widget extension in Xcode, and add the same group identifier to both App IDs in the Developer portal—otherwise the suite may be unavailable and the widget will show placeholder copy until signing matches.
 - **Deep link:** widget taps use **`stridecheck://run-index`**; `ContentView` switches to the **Conditions** tab so the full breakdown is one tap away.
 
