@@ -4,6 +4,8 @@ import MapKit
 import SwiftUI
 
 struct ContentView: View {
+    @Environment(\.scenePhase) private var scenePhase
+
     @StateObject private var vm = ConditionsViewModel()
     @StateObject private var locationService = LocationService()
     @StateObject private var whoopLink = WhoopLinkViewModel()
@@ -11,6 +13,10 @@ struct ContentView: View {
     @StateObject private var stravaLink = StravaLinkViewModel()
     @AppStorage("stridecheck.notifyRunWindows") private var notifyStrongWindows = false
     @State private var selectedTab = 0
+    /// Throttles refetch when the scene becomes active (returning from background). Seeded in `.task` so cold launch does not immediately duplicate `onChange(.active)`.
+    @State private var lastForegroundConditionsRefreshAt = Date(timeIntervalSince1970: 0)
+
+    private static let foregroundConditionsRefreshMinInterval: TimeInterval = 45
 
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -31,6 +37,7 @@ struct ContentView: View {
         .environmentObject(stravaLink)
         .tint(.teal)
         .task {
+            lastForegroundConditionsRefreshAt = Date()
             locationService.requestAccessAndLocation()
             whoopLink.refreshConnectionState()
             garminLink.refreshConnectionState()
@@ -47,6 +54,15 @@ struct ContentView: View {
             if url.host == "run-index" {
                 selectedTab = 0
             }
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            guard newPhase == .active else { return }
+            let now = Date()
+            guard now.timeIntervalSince(lastForegroundConditionsRefreshAt) >= Self.foregroundConditionsRefreshMinInterval else {
+                return
+            }
+            lastForegroundConditionsRefreshAt = now
+            Task { await reloadConditionsSnapshotIfPossible() }
         }
     }
 
@@ -136,6 +152,9 @@ struct ContentView: View {
         VStack(alignment: .leading, spacing: 10) {
             Button {
                 locationService.requestAccessAndLocation()
+                if let c = locationService.coordinate {
+                    Task { await vm.loadForCurrentLocation(c) }
+                }
             } label: {
                 Label("Use Current Location", systemImage: "location.fill")
                     .frame(maxWidth: .infinity)
