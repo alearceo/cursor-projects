@@ -7,6 +7,7 @@ struct RunIndexWidgetEntryView: View {
     var entry: RunIndexEntry
 
     private static let deepLink = URL(string: "stridecheck://run-index")!
+    private static let infoURL = URL(string: "stridecheck://widget-info")!
 
     var body: some View {
         Group {
@@ -60,51 +61,70 @@ struct RunIndexWidgetEntryView: View {
         }
     }
 
-    /// Small widget: score on its own row so “Run Index” + tier never compete with the number for width (avoids “Run In…” / “Stro…” truncation).
+    /// Small widget: CARROT-style label + value rows; context lives behind the info control in the app.
     private var smallHomeContent: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text("\(entry.payload.score)")
-                .font(.system(size: 40, weight: .bold, design: .rounded))
-                .foregroundStyle(accent)
-                .lineLimit(1)
-                .minimumScaleFactor(0.75)
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Run Index")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-                Text(entry.payload.tierLabel)
-                    .font(.subheadline.weight(.bold))
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 4)
-                    .background(accent.opacity(colorScheme == .dark ? 0.25 : 0.2))
-                    .foregroundStyle(accent)
-                    .clipShape(Capsule())
-                    .lineLimit(1)
-                    .fixedSize(horizontal: true, vertical: false)
+        ZStack(alignment: .topTrailing) {
+            VStack(alignment: .leading, spacing: 0) {
+                carrotField(label: "Score") {
+                    Text("\(entry.payload.score)")
+                        .font(.system(size: 34, weight: .bold, design: .rounded))
+                        .foregroundStyle(accent)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.75)
+                }
+                carrotField(label: "Run Index") {
+                    Text(entry.payload.verdict)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.primary)
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.82)
+                        .multilineTextAlignment(.leading)
+                }
+                carrotField(label: "Tier") {
+                    Text(entry.payload.tierLabel)
+                        .font(.caption.weight(.bold))
+                        .padding(.horizontal, 9)
+                        .padding(.vertical, 4)
+                        .background(accent.opacity(colorScheme == .dark ? 0.25 : 0.2))
+                        .foregroundStyle(accent)
+                        .clipShape(Capsule())
+                        .lineLimit(1)
+                }
+                Spacer(minLength: 2)
+                carrotField(label: "Location") {
+                    Text(entry.payload.placeName)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.primary)
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.85)
+                        .multilineTextAlignment(.leading)
+                }
             }
+            .padding(.trailing, 26)
 
-            Text(entry.payload.contextLine)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.leading)
-                .lineLimit(3)
-                .minimumScaleFactor(0.82)
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-            Spacer(minLength: 0)
-
-            Text(entry.payload.placeName)
-                .font(.caption.weight(.medium))
-                .foregroundStyle(.secondary)
-                .lineLimit(2)
-                .minimumScaleFactor(0.85)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            Link(destination: Self.infoURL) {
+                Image(systemName: "info.circle")
+                    .font(.body.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                    .accessibilityLabel("Details")
+            }
+            .padding(.top, 6)
+            .padding(.trailing, 2)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .padding(EdgeInsets(top: 10, leading: 11, bottom: 10, trailing: 11))
+        .padding(EdgeInsets(top: 10, leading: 11, bottom: 10, trailing: 9))
+    }
+
+    private func carrotField<Content: View>(label: String, @ViewBuilder value: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(label)
+                .font(.caption2.weight(.semibold))
+                .foregroundStyle(.secondary)
+                .textCase(.uppercase)
+                .tracking(0.6)
+            value()
+        }
+        .padding(.bottom, 6)
     }
 
     private var circularContent: some View {
