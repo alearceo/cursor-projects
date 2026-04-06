@@ -74,31 +74,33 @@ struct RunIndexWidgetEntryView: View {
                     smallHomeTwoColumnTop
                 }
             }
-            .padding(.trailing, 26)
+            /// Keeps text out from under the info control (compact icon in the corner).
+            .padding(.trailing, 18)
 
             Link(destination: Self.infoURL) {
                 Image(systemName: "info.circle")
-                    .font(.body.weight(.semibold))
+                    .font(.system(size: 15, weight: .semibold))
                     .foregroundStyle(.secondary)
+                    .frame(minWidth: 28, minHeight: 28)
+                    .contentShape(Rectangle())
                     .accessibilityLabel("Details")
             }
-            .padding(.top, 4)
-            .padding(.trailing, 2)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .padding(EdgeInsets(top: 10, leading: 11, bottom: 10, trailing: 9))
+        /// Tight insets (Carrot-style); system widget margins still apply—smaller custom padding reclaims usable width.
+        .padding(EdgeInsets(top: 5, leading: 6, bottom: 5, trailing: 4))
     }
 
     private var runIndexLabelAndTier: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text("Run Index")
-                .font(.subheadline.weight(.semibold))
+                .font(.callout.weight(.semibold))
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.75)
             Text(entry.payload.tierLabel)
-                .font(.subheadline.weight(.bold))
-                .padding(.horizontal, 10)
+                .font(.callout.weight(.bold))
+                .padding(.horizontal, 8)
                 .padding(.vertical, 4)
                 .background(accent.opacity(colorScheme == .dark ? 0.25 : 0.2))
                 .foregroundStyle(accent)
@@ -112,7 +114,7 @@ struct RunIndexWidgetEntryView: View {
     private var smallHomeVerticalStack: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text("\(entry.payload.score)")
-                .font(.system(size: 36, weight: .bold, design: .rounded))
+                .font(.system(size: 42, weight: .bold, design: .rounded))
                 .foregroundStyle(accent)
                 .lineLimit(1)
                 .minimumScaleFactor(0.55)
@@ -123,7 +125,7 @@ struct RunIndexWidgetEntryView: View {
             Spacer(minLength: 4)
 
             Text(entry.payload.placeName)
-                .font(.caption.weight(.medium))
+                .font(.footnote.weight(.medium))
                 .foregroundStyle(.secondary)
                 .lineLimit(2)
                 .minimumScaleFactor(0.85)
@@ -136,7 +138,7 @@ struct RunIndexWidgetEntryView: View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(alignment: .top, spacing: 10) {
                 Text("\(entry.payload.score)")
-                    .font(.system(size: 38, weight: .bold, design: .rounded))
+                    .font(.system(size: 44, weight: .bold, design: .rounded))
                     .foregroundStyle(accent)
                     .lineLimit(1)
                     .minimumScaleFactor(0.55)
@@ -151,7 +153,7 @@ struct RunIndexWidgetEntryView: View {
             Spacer(minLength: 6)
 
             Text(entry.payload.placeName)
-                .font(.caption.weight(.medium))
+                .font(.footnote.weight(.medium))
                 .foregroundStyle(.secondary)
                 .lineLimit(2)
                 .minimumScaleFactor(0.85)
