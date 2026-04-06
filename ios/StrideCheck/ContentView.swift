@@ -528,22 +528,27 @@ struct RouteAnd511View: View {
     @State private var selectedSuggestionId: UUID?
     @State private var isLoadingSuggestions = false
     @State private var suggestionError: String?
+    @AppStorage("stridecheck.routeSheetExpanded") private var routeSheetExpanded = true
 
     var body: some View {
         NavigationStack {
-            mapLayer
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .frame(minWidth: 1, minHeight: 1)
-                .ignoresSafeArea(edges: [.horizontal, .bottom])
-                .safeAreaInset(edge: .bottom, spacing: 0) {
-                    route511Card
+            GeometryReader { geo in
+                let expandedH = min(geo.size.height * 0.53, 440)
+                let collapsedH: CGFloat = 120
+                ZStack(alignment: .bottom) {
+                    mapLayer
+                        .frame(width: geo.size.width, height: geo.size.height)
+                        .frame(minWidth: 1, minHeight: 1)
+                        .ignoresSafeArea(edges: [.horizontal, .bottom])
+                    routeBottomSheet(expandedHeight: expandedH, collapsedHeight: collapsedH)
                 }
-                .background(Color(uiColor: .systemGroupedBackground))
-                .toolbar(.hidden, for: .navigationBar)
-                .overlay(alignment: .top) {
-                    TopEdgeFrostFade(style: .map)
-                        .ignoresSafeArea(edges: .top)
-                }
+            }
+            .background(Color(uiColor: .systemGroupedBackground))
+            .toolbar(.hidden, for: .navigationBar)
+            .overlay(alignment: .top) {
+                TopEdgeFrostFade(style: .map)
+                    .ignoresSafeArea(edges: .top)
+            }
         }
         .onAppear {
             recenterMap()
@@ -591,7 +596,129 @@ struct RouteAnd511View: View {
         }
     }
 
-    private var route511Card: some View {
+    private func routeBottomSheet(expandedHeight: CGFloat, collapsedHeight: CGFloat) -> some View {
+        let grabberReserve: CGFloat = 56
+        return VStack(spacing: 0) {
+            routeSheetGrabberRow
+            if routeSheetExpanded {
+                ScrollView {
+                    route511ExpandedContent
+                        .padding(16)
+                }
+                .frame(maxHeight: max(120, expandedHeight - grabberReserve), alignment: .top)
+            } else {
+                routeSheetCollapsedStrip
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 10)
+                    .simultaneousGesture(routeSheetDragGesture())
+            }
+        }
+        .frame(height: routeSheetExpanded ? expandedHeight : collapsedHeight, alignment: .top)
+        .frame(maxWidth: .infinity, alignment: .top)
+        .clipped()
+        .background(.ultraThinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .shadow(color: Color.black.opacity(0.12), radius: 10, y: -2)
+        .padding(.horizontal, 12)
+        .padding(.bottom, 6)
+        .animation(.spring(response: 0.38, dampingFraction: 0.86), value: routeSheetExpanded)
+    }
+
+    private var routeSheetGrabberRow: some View {
+        Button(action: toggleRouteSheet) {
+            VStack(spacing: 8) {
+                Capsule()
+                    .fill(Color.secondary.opacity(0.38))
+                    .frame(width: 40, height: 5)
+                    .accessibilityHidden(true)
+                HStack {
+                    Text("Route & 511")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    Image(systemName: routeSheetExpanded ? "chevron.compact.down" : "chevron.compact.up")
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(.tertiary)
+                }
+                .padding(.horizontal, 4)
+            }
+            .padding(.top, 10)
+            .padding(.bottom, 6)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(routeSheetExpanded ? "Collapse route panel" : "Expand route panel")
+        .accessibilityHint("Shows suggested routes, map data sources, and state 511 link")
+        .simultaneousGesture(routeSheetDragGesture())
+    }
+
+    private var routeSheetCollapsedStrip: some View {
+        Button {
+            withAnimation(.spring(response: 0.38, dampingFraction: 0.86)) {
+                routeSheetExpanded = true
+            }
+        } label: {
+            HStack(alignment: .center, spacing: 10) {
+                Image(systemName: "map.fill")
+                    .font(.title3)
+                    .foregroundStyle(.teal)
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(placeName ?? "Routes & map sources")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.primary)
+                        .lineLimit(1)
+                    Text(routeSheetCollapsedSubtitle)
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
+                }
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.up")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.tertiary)
+            }
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var routeSheetCollapsedSubtitle: String {
+        var bits: [String] = []
+        if !suggestionRuns.isEmpty {
+            bits.append("\(suggestionRuns.count) suggested route\(suggestionRuns.count == 1 ? "" : "s")")
+        }
+        bits.append("Tap to expand")
+        return bits.joined(separator: " · ")
+    }
+
+    private func routeSheetDragGesture() -> some Gesture {
+        DragGesture(minimumDistance: 20)
+            .onEnded { routeSheetHandleDragEnd($0) }
+    }
+
+    private func routeSheetHandleDragEnd(_ value: DragGesture.Value) {
+        let dy = value.translation.height
+        let flick = value.predictedEndTranslation.height - value.translation.height
+        withAnimation(.spring(response: 0.38, dampingFraction: 0.86)) {
+            if routeSheetExpanded {
+                if dy > 55 || flick > 140 {
+                    routeSheetExpanded = false
+                }
+            } else {
+                if dy < -45 || flick < -120 {
+                    routeSheetExpanded = true
+                }
+            }
+        }
+    }
+
+    private func toggleRouteSheet() {
+        withAnimation(.spring(response: 0.38, dampingFraction: 0.86)) {
+            routeSheetExpanded.toggle()
+        }
+    }
+
+    /// Full scrollable panel (routes, Strava, 511).
+    private var route511ExpandedContent: some View {
         VStack(alignment: .leading, spacing: 12) {
             routeSuggestionCard
             stravaCard
@@ -611,12 +738,7 @@ struct RouteAnd511View: View {
             }
             .buttonStyle(.borderedProminent)
         }
-        .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.ultraThinMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-        .padding(.horizontal, 16)
-        .padding(.bottom, 8)
     }
 
     private var routeSuggestionCard: some View {
