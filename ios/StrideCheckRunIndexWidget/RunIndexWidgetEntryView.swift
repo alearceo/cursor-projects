@@ -72,7 +72,7 @@ struct RunIndexWidgetEntryView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .padding(EdgeInsets(top: 4, leading: 4, bottom: 4, trailing: 3))
+        .padding(EdgeInsets(top: 3, leading: 4, bottom: 3, trailing: 3))
     }
 
     // MARK: - Main face (page 1)
@@ -84,12 +84,13 @@ struct RunIndexWidgetEntryView: View {
                 Spacer(minLength: 0)
                 Button(intent: OpenRunIndexWidgetDetailIntent()) {
                     Image(systemName: "info.circle")
-                        .font(.system(size: 15, weight: .semibold))
+                        .font(.system(size: 14, weight: .semibold))
                         .foregroundStyle(.secondary)
-                        .frame(minWidth: 28, minHeight: 28)
+                        .padding(4)
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
+                .offset(x: 4, y: -3)
                 .accessibilityLabel("Show details")
             }
             Spacer(minLength: 4)
@@ -139,7 +140,7 @@ struct RunIndexWidgetEntryView: View {
                 VStack(alignment: .leading, spacing: 0) {
                     // Section title — leave gap on the right for the X
                     detailPageTitle(for: page)
-                        .padding(.trailing, 18)
+                        .padding(.trailing, 14)
                         .padding(.bottom, 5)
 
                     detailPageBody(for: page)
@@ -162,15 +163,16 @@ struct RunIndexWidgetEntryView: View {
             }
             .buttonStyle(.plain)
 
-            // X close — sits on top, intercepts taps in the corner
+            // X close — flush to the top-trailing corner
             Button(intent: CloseRunIndexWidgetDetailIntent()) {
                 Text("✕")
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundStyle(.secondary)
-                    .frame(minWidth: 22, minHeight: 22)
+                    .padding(5)
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
+            .offset(x: 4, y: -3)
             .accessibilityLabel("Back to run index")
         }
     }
