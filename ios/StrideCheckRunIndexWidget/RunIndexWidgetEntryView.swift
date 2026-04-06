@@ -62,45 +62,17 @@ struct RunIndexWidgetEntryView: View {
         }
     }
 
-    /// Small widget: score + Run Index / tier row, location; context and verdict are in the app info sheet.
+    /// Small widget: score + Run Index / tier + location. `systemSmall` uses a vertical stack so the score
+    /// is never squeezed by a sibling with `maxWidth: .infinity` (which caused “…” truncation).
     private var smallHomeContent: some View {
         ZStack(alignment: .topTrailing) {
-            VStack(alignment: .leading, spacing: 0) {
-                HStack(alignment: .top, spacing: 10) {
-                    Text("\(entry.payload.score)")
-                        .font(.system(size: 40, weight: .bold, design: .rounded))
-                        .foregroundStyle(accent)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.68)
-
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Run Index")
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(.secondary)
-                            .lineLimit(1)
-                        Text(entry.payload.tierLabel)
-                            .font(.subheadline.weight(.bold))
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 4)
-                            .background(accent.opacity(colorScheme == .dark ? 0.25 : 0.2))
-                            .foregroundStyle(accent)
-                            .clipShape(Capsule())
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.8)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-
-                    Spacer(minLength: 0)
+            Group {
+                switch family {
+                case .systemSmall:
+                    smallHomeVerticalStack
+                default:
+                    smallHomeTwoColumnTop
                 }
-
-                Spacer(minLength: 6)
-
-                Text(entry.payload.placeName)
-                    .font(.caption.weight(.medium))
-                    .foregroundStyle(.secondary)
-                    .lineLimit(2)
-                    .minimumScaleFactor(0.85)
-                    .frame(maxWidth: .infinity, alignment: .leading)
             }
             .padding(.trailing, 26)
 
@@ -115,6 +87,76 @@ struct RunIndexWidgetEntryView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .padding(EdgeInsets(top: 10, leading: 11, bottom: 10, trailing: 9))
+    }
+
+    private var runIndexLabelAndTier: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text("Run Index")
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
+            Text(entry.payload.tierLabel)
+                .font(.subheadline.weight(.bold))
+                .padding(.horizontal, 10)
+                .padding(.vertical, 4)
+                .background(accent.opacity(colorScheme == .dark ? 0.25 : 0.2))
+                .foregroundStyle(accent)
+                .clipShape(Capsule())
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+        }
+    }
+
+    /// Tight home-screen square: one column avoids horizontal compression.
+    private var smallHomeVerticalStack: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("\(entry.payload.score)")
+                .font(.system(size: 36, weight: .bold, design: .rounded))
+                .foregroundStyle(accent)
+                .lineLimit(1)
+                .minimumScaleFactor(0.55)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            runIndexLabelAndTier
+
+            Spacer(minLength: 4)
+
+            Text(entry.payload.placeName)
+                .font(.caption.weight(.medium))
+                .foregroundStyle(.secondary)
+                .lineLimit(2)
+                .minimumScaleFactor(0.85)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    /// Medium+ : score left, Run Index + tier right; score keeps intrinsic width so it won’t ellipsize.
+    private var smallHomeTwoColumnTop: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(alignment: .top, spacing: 10) {
+                Text("\(entry.payload.score)")
+                    .font(.system(size: 38, weight: .bold, design: .rounded))
+                    .foregroundStyle(accent)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.55)
+                    .layoutPriority(2)
+                    .fixedSize(horizontal: true, vertical: false)
+
+                runIndexLabelAndTier
+                    .layoutPriority(1)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+
+            Spacer(minLength: 6)
+
+            Text(entry.payload.placeName)
+                .font(.caption.weight(.medium))
+                .foregroundStyle(.secondary)
+                .lineLimit(2)
+                .minimumScaleFactor(0.85)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
     }
 
     private var circularContent: some View {
