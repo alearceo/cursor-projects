@@ -7,6 +7,7 @@ final class DOTConditionAnnotation: MKPointAnnotation {}
 
 final class DOTTrafficPolyline: MKPolyline {}
 final class StravaRoutePolyline: MKPolyline {}
+final class SuggestedRoutePolyline: MKPolyline {}
 
 /// MapKit map with **live Apple traffic** (`showsTraffic`) plus optional DOT and Strava overlays (Options A + C).
 struct RouteTrafficMapView: UIViewRepresentable {
@@ -15,6 +16,8 @@ struct RouteTrafficMapView: UIViewRepresentable {
     var centerTitle: String
     var dotFeatures: [TrafficOverlayFeature]
     var stravaPolylines: [[CLLocationCoordinate2D]]
+    /// MVP suggested out-and-back routes (teal/green); empty hides them.
+    var suggestedPolylines: [[CLLocationCoordinate2D]]
 
     func makeCoordinator() -> Coordinator {
         Coordinator(centerTitle: centerTitle)
@@ -36,7 +39,8 @@ struct RouteTrafficMapView: UIViewRepresentable {
             region: region,
             centerPin: centerPin,
             dotFeatures: dotFeatures,
-            stravaPolylines: stravaPolylines
+            stravaPolylines: stravaPolylines,
+            suggestedPolylines: suggestedPolylines
         )
     }
 
@@ -53,7 +57,8 @@ struct RouteTrafficMapView: UIViewRepresentable {
             region: MKCoordinateRegion,
             centerPin: CLLocationCoordinate2D?,
             dotFeatures: [TrafficOverlayFeature],
-            stravaPolylines: [[CLLocationCoordinate2D]]
+            stravaPolylines: [[CLLocationCoordinate2D]],
+            suggestedPolylines: [[CLLocationCoordinate2D]]
         ) {
             if lastRegionApplied == nil || !regionsClose(lastRegionApplied!, region) {
                 mapView.setRegion(region, animated: false)
@@ -92,6 +97,12 @@ struct RouteTrafficMapView: UIViewRepresentable {
                 let poly = StravaRoutePolyline(coordinates: &pts, count: pts.count)
                 mapView.addOverlay(poly)
             }
+
+            for line in suggestedPolylines where line.count >= 2 {
+                var pts = line
+                let poly = SuggestedRoutePolyline(coordinates: &pts, count: pts.count)
+                mapView.addOverlay(poly)
+            }
         }
 
         private func regionsClose(_ a: MKCoordinateRegion, _ b: MKCoordinateRegion) -> Bool {
@@ -106,6 +117,8 @@ struct RouteTrafficMapView: UIViewRepresentable {
                 let r = MKPolylineRenderer(polyline: poly)
                 if poly is StravaRoutePolyline {
                     r.strokeColor = UIColor.systemPurple.withAlphaComponent(0.85)
+                } else if poly is SuggestedRoutePolyline {
+                    r.strokeColor = UIColor.systemGreen.withAlphaComponent(0.88)
                 } else {
                     r.strokeColor = UIColor.systemOrange.withAlphaComponent(0.78)
                 }

@@ -523,6 +523,11 @@ struct RouteAnd511View: View {
     )
     @State private var dotOverlayFeatures: [TrafficOverlayFeature] = []
     @State private var stravaPolylines: [[CLLocationCoordinate2D]] = []
+    @State private var workoutIntent: WorkoutRouteIntent = .easy
+    @State private var suggestionRuns: [SuggestedRouteRun] = []
+    @State private var selectedSuggestionId: UUID?
+    @State private var isLoadingSuggestions = false
+    @State private var suggestionError: String?
 
     var body: some View {
         NavigationStack {
@@ -544,7 +549,12 @@ struct RouteAnd511View: View {
             recenterMap()
             stravaLink.refreshConnectionState()
         }
-        .onChange(of: coordinateKey) { _, _ in recenterMap() }
+        .onChange(of: coordinateKey) { _, _ in
+            recenterMap()
+            suggestionRuns = []
+            selectedSuggestionId = nil
+            suggestionError = nil
+        }
         .task(id: overlayTaskKey) { await loadStateAgencyOverlay() }
         .task(id: stravaTaskKey) { await loadStravaRoutes() }
     }
@@ -583,6 +593,7 @@ struct RouteAnd511View: View {
 
     private var route511Card: some View {
         VStack(alignment: .leading, spacing: 12) {
+            routeSuggestionCard
             stravaCard
             if let placeName {
                 Text(placeName)
@@ -606,6 +617,99 @@ struct RouteAnd511View: View {
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .padding(.horizontal, 16)
         .padding(.bottom, 8)
+    }
+
+    private var routeSuggestionCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Suggested routes (beta)")
+                .font(.subheadline.weight(.semibold))
+            Text(workoutIntent.summary)
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+            Picker("Workout type", selection: $workoutIntent) {
+                ForEach(WorkoutRouteIntent.allCases) { intent in
+                    Text(intent.displayTitle).tag(intent)
+                }
+            }
+            .pickerStyle(.segmented)
+            Button {
+                Task { await loadRouteSuggestions() }
+            } label: {
+                HStack {
+                    if isLoadingSuggestions {
+                        ProgressView()
+                            .controlSize(.small)
+                    }
+                    Text("Find routes near here")
+                }
+                .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(.green)
+            .disabled(coordinate == nil || isLoadingSuggestions)
+            Text("Uses Apple walking directions and open elevation data. Not turn-by-turn navigation — verify roads and traffic yourself.")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+            if let suggestionError {
+                Text(suggestionError)
+                    .font(.caption)
+                    .foregroundStyle(.red)
+            }
+            if suggestionRuns.isEmpty, !isLoadingSuggestions, suggestionError == nil {
+                Text("Choose a workout type, then find routes.")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+            }
+            ForEach(suggestionRuns) { run in
+                Button {
+                    selectedSuggestionId = run.id
+                } label: {
+                    HStack(alignment: .top, spacing: 10) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("\(run.compassLabel) · \(run.distanceKmString)")
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(.primary)
+                            Text(detailLine(for: run))
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                        }
+                        Spacer(minLength: 0)
+                        if selectedSuggestionId == run.id {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundStyle(.green)
+                        }
+                    }
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color(uiColor: .tertiarySystemGroupedBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    private func detailLine(for run: SuggestedRouteRun) -> String {
+        var parts: [String] = [run.ascentString]
+        if !run.gradeString.isEmpty { parts.append(run.gradeString) }
+        return parts.joined(separator: " · ")
+    }
+
+    private func loadRouteSuggestions() async {
+        guard let c = coordinate else { return }
+        isLoadingSuggestions = true
+        suggestionError = nil
+        defer { isLoadingSuggestions = false }
+        do {
+            let runs = try await RouteSuggestionService.suggestRoutes(center: c, intent: workoutIntent)
+            suggestionRuns = runs
+            selectedSuggestionId = runs.first?.id
+        } catch is CancellationError {
+            suggestionRuns = []
+        } catch {
+            suggestionRuns = []
+            suggestionError = error.localizedDescription
+        }
     }
 
     private var stravaCard: some View {
@@ -677,7 +781,16 @@ struct RouteAnd511View: View {
         if showStravaRoutesOnMap, stravaLink.isConnected, !stravaPolylines.isEmpty {
             parts.append("Purple lines are from Strava.")
         }
+        if !displayedSuggestedPolylines.isEmpty {
+            parts.append("Green line is a suggested out-and-back route (beta).")
+        }
         return parts.joined(separator: " ")
+    }
+
+    private var displayedSuggestedPolylines: [[CLLocationCoordinate2D]] {
+        guard let id = selectedSuggestionId,
+              let run = suggestionRuns.first(where: { $0.id == id }) else { return [] }
+        return [run.coordinates]
     }
 
     private var coordinateKey: String {
@@ -693,7 +806,8 @@ struct RouteAnd511View: View {
                 centerPin: c,
                 centerTitle: "StrideCheck area",
                 dotFeatures: dotOverlayFeatures,
-                stravaPolylines: stravaPolylines
+                stravaPolylines: stravaPolylines,
+                suggestedPolylines: displayedSuggestedPolylines
             )
         } else {
             ZStack {

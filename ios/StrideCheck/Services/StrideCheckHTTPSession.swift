@@ -22,6 +22,7 @@ private func strideCheckHostAllowed(_ rawHost: String) -> Bool {
     if host == "arcgis.com" || host.hasSuffix(".arcgis.com") { return true }
     if host.hasSuffix(".dot.gov") { return true }
     if host.hasSuffix("wsdot.wa.gov") { return true }
+    if host == "api.open-elevation.com" { return true }
     return false
 }
 
