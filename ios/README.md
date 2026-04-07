@@ -16,6 +16,11 @@
 
 Native SwiftUI app for runner-focused conditions: weather, air quality, NWS alerts, a blended **run index** (environment uses **effective heat/cold**—feels-like plus NWS-style heat index and wind chill when applicable—via `HeatColdStress.swift`), optional **wearable readiness** (Apple Health baseline plus opt-in **Whoop**, **Oura**, and **Garmin Health API** for the index), and a **route awareness** index (environment plus optional crime-incident context). **Data sources** screens centralize credentials and toggles; **Strava** map overlays are **opt-in**. Includes a **Run Index** widget (small Home Screen + lock-screen accessories), offline cache, optional local notifications, and a **Route & 511** tab with MapKit and state 511 links.
 
+## App icon
+
+- Single **1024×1024** PNG: `StrideCheck/Assets.xcassets/AppIcon.appiconset/AppIcon.png` (`Contents.json` uses **universal** idiom — Xcode 15+).
+- Source artwork is scaled proportionally then **letter-padded** to a square if needed (green `#28A745`) so App Store validation passes.
+
 ## Project layout
 
 
