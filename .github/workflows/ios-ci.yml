@@ -35,6 +35,11 @@ jobs:
           xcodebuild -version
           swift --version
 
+      - name: SwiftLint
+        run: |
+          brew install swiftlint
+          cd ios && swiftlint lint --strict
+
       - name: List simulator destinations (diagnostic)
         continue-on-error: true
         run: xcodebuild -project "$XCODE_PROJECT" -scheme "$SCHEME" -showdestinations

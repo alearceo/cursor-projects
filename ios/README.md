@@ -47,6 +47,10 @@ Native SwiftUI app for runner-focused conditions: weather, air quality, NWS aler
 2. Select the **StrideCheck** scheme and an iPhone simulator or device.
 3. Build and run (**⌘R**).
 
+### SwiftLint
+
+From `ios/`: `swiftlint lint --strict` (install: `brew install swiftlint`).
+
 ### Device builds and HealthKit
 
 The target uses the **HealthKit** capability. For a **physical device**, the App ID in the Apple Developer portal must have **HealthKit** enabled; then refresh or regenerate the provisioning profile (or use automatic signing and let Xcode fix it). Simulator builds do not hit that provisioning check the same way.
