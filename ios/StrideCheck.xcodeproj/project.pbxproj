@@ -42,6 +42,8 @@
 		AA0000000000000000000134 /* MapDataSourcesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000135 /* MapDataSourcesView.swift */; };
 		AA0000000000000000000136 /* StravaMapOverlayPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000137 /* StravaMapOverlayPreferences.swift */; };
 		AA0000000000000000000138 /* HeatColdStress.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000139 /* HeatColdStress.swift */; };
+		AA0000000000000000000736 /* ScoreEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000735 /* ScoreEngine.swift */; };
+		AA0000000000000000000738 /* AwarenessEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000737 /* AwarenessEngine.swift */; };
 		AA0000000000000000000140 /* GarminOAuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000141 /* GarminOAuthService.swift */; };
 		AA0000000000000000000142 /* GarminAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000143 /* GarminAPIClient.swift */; };
 		AA0000000000000000000144 /* GarminLinkViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000145 /* GarminLinkViewModel.swift */; };
@@ -153,6 +155,8 @@
 		AA0000000000000000000135 /* MapDataSourcesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapDataSourcesView.swift; sourceTree = "<group>"; };
 		AA0000000000000000000137 /* StravaMapOverlayPreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StravaMapOverlayPreferences.swift; sourceTree = "<group>"; };
 		AA0000000000000000000139 /* HeatColdStress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeatColdStress.swift; sourceTree = "<group>"; };
+		AA0000000000000000000735 /* ScoreEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScoreEngine.swift; sourceTree = "<group>"; };
+		AA0000000000000000000737 /* AwarenessEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AwarenessEngine.swift; sourceTree = "<group>"; };
 		AA0000000000000000000141 /* GarminOAuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GarminOAuthService.swift; sourceTree = "<group>"; };
 		AA0000000000000000000143 /* GarminAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GarminAPIClient.swift; sourceTree = "<group>"; };
 		AA0000000000000000000145 /* GarminLinkViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GarminLinkViewModel.swift; sourceTree = "<group>"; };
@@ -275,6 +279,8 @@
 				AA0000000000000000000014 /* ConditionsService.swift */,
 				AA0000000000000000000708 /* ConditionsFetching.swift */,
 				AA0000000000000000000139 /* HeatColdStress.swift */,
+				AA0000000000000000000735 /* ScoreEngine.swift */,
+				AA0000000000000000000737 /* AwarenessEngine.swift */,
 				AA0000000000000000000015 /* LocationService.swift */,
 				AA0000000000000000000019 /* StrideCheckHTTPSession.swift */,
 				AA0000000000000000000104 /* SnapshotCache.swift */,
@@ -499,6 +505,8 @@
 				AA0000000000000000000134 /* MapDataSourcesView.swift in Sources */,
 				AA0000000000000000000136 /* StravaMapOverlayPreferences.swift in Sources */,
 				AA0000000000000000000138 /* HeatColdStress.swift in Sources */,
+				AA0000000000000000000736 /* ScoreEngine.swift in Sources */,
+				AA0000000000000000000738 /* AwarenessEngine.swift in Sources */,
 				AA0000000000000000000140 /* GarminOAuthService.swift in Sources */,
 				AA0000000000000000000142 /* GarminAPIClient.swift in Sources */,
 				AA0000000000000000000144 /* GarminLinkViewModel.swift in Sources */,
