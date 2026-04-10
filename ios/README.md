@@ -87,6 +87,10 @@ The **StrideCheck** target’s base configuration is `StrideCheck/BuildConfig.xc
 
 **Security note:** The documented OAuth **authorization code** flow typically expects a **client secret** at token exchange time. Embedding `WHOOP_CLIENT_SECRET` or `STRAVA_CLIENT_SECRET` in a shipping app is weak; for production, prefer a **small backend** that holds the secret and exchanges the code for tokens, then issues tokens to the app.
 
+### CI simulator destinations
+
+GitHub Actions **builds** with `generic/platform=iOS Simulator`, then **tests** on a concrete destination (`iPhone 16` + `OS=latest` on the `macos-15` image) because `xcodebuild test` cannot run on “Any iOS Simulator Device.” A non-blocking `xcodebuild -showdestinations` step in the workflow helps debug destination mismatches.
+
 ### CI and `Info.plist` merge pattern
 
 Xcode merges **target build settings** with `**INFOPLIST_FILE`**: any `$(VARIABLE)` in `Info.plist` is expanded from **xcconfig / build settings** at build time. You do **not** need a separate plist merge step if keys already use `$(OURA_PERSONAL_ACCESS_TOKEN)`-style placeholders.

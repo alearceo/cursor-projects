@@ -19,7 +19,9 @@ jobs:
     env:
       XCODE_PROJECT: ios/StrideCheck.xcodeproj
       SCHEME: StrideCheck
-      DESTINATION: "platform=iOS Simulator,name=iPhone 16,OS=latest"
+      # `xcodebuild test` requires a concrete device; `build` can use generic.
+      BUILD_DESTINATION: "generic/platform=iOS Simulator"
+      TEST_DESTINATION: "platform=iOS Simulator,name=iPhone 16,OS=latest"
 
     steps:
       - name: Checkout
@@ -32,6 +34,10 @@ jobs:
         run: |
           xcodebuild -version
           swift --version
+
+      - name: List simulator destinations (diagnostic)
+        continue-on-error: true
+        run: xcodebuild -project "$XCODE_PROJECT" -scheme "$SCHEME" -showdestinations
 
       # Restore Derived Data cache to speed up subsequent builds.
       - name: Cache derived data
@@ -57,7 +63,7 @@ jobs:
           xcodebuild build \
             -project "$XCODE_PROJECT" \
             -scheme "$SCHEME" \
-            -destination "$DESTINATION" \
+            -destination "$BUILD_DESTINATION" \
             -derivedDataPath ~/Library/Developer/Xcode/DerivedData \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
@@ -73,7 +79,7 @@ jobs:
           xcodebuild test \
             -project "$XCODE_PROJECT" \
             -scheme "$SCHEME" \
-            -destination "$DESTINATION" \
+            -destination "$TEST_DESTINATION" \
             -derivedDataPath ~/Library/Developer/Xcode/DerivedData \
             -resultBundlePath TestResults.xcresult \
             CODE_SIGN_IDENTITY="" \
