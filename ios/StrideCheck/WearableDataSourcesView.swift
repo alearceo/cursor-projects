@@ -227,13 +227,13 @@ struct WearableDataSourcesView: View {
             await refreshHealthSummary()
         }
         .onChange(of: includeWhoop) { _, _ in
-            ConditionsSnapshotReload.request()
+            ConditionsReloadCenter.shared.requestReload()
         }
         .onChange(of: includeOura) { _, _ in
-            ConditionsSnapshotReload.request()
+            ConditionsReloadCenter.shared.requestReload()
         }
         .onChange(of: includeGarmin) { _, _ in
-            ConditionsSnapshotReload.request()
+            ConditionsReloadCenter.shared.requestReload()
         }
         .onAppear {
             whoopLink.refreshConnectionState()
@@ -306,7 +306,7 @@ struct WearableDataSourcesView: View {
         ouraConfigured = true
         includeOura = true
         ouraFooterNote = "Saved. Run index refreshes when location or zip is available."
-        ConditionsSnapshotReload.request()
+        ConditionsReloadCenter.shared.requestReload()
     }
 
     private func removeOuraToken() {
@@ -314,7 +314,7 @@ struct WearableDataSourcesView: View {
         ouraConfigured = StrideCheckSecrets.ouraPersonalAccessToken != nil
         includeOura = false
         ouraFooterNote = "Keychain token removed. A build-time token in Info.plist may still apply until cleared."
-        ConditionsSnapshotReload.request()
+        ConditionsReloadCenter.shared.requestReload()
     }
 
     private func refreshHealthSummary() async {

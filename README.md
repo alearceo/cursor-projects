@@ -18,8 +18,8 @@ Full documentation, build instructions, and API key setup: **[`ios/README.md`](i
 
 ```bash
 # 1. Clone
-git clone https://github.com/alearceo/cursor-projects.git
-cd cursor-projects   # or the runner-road-conditions subfolder
+git clone https://github.com/alearceo/runner-road-conditions.git
+cd runner-road-conditions
 
 # 2. Copy secrets template
 cp ios/Config/Secrets.xcconfig.template ios/Config/Secrets.xcconfig

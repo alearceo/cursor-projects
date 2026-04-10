@@ -18,7 +18,7 @@ final class GarminLinkViewModel: ObservableObject {
             try await GarminOAuthService.signInInteractively()
             isConnected = true
             WearableRunIndexPreferences.includeGarminInRunIndex = true
-            ConditionsSnapshotReload.request()
+            ConditionsReloadCenter.shared.requestReload()
         } catch {
             lastError = error.localizedDescription
         }
@@ -29,6 +29,6 @@ final class GarminLinkViewModel: ObservableObject {
         WearableRunIndexPreferences.includeGarminInRunIndex = false
         isConnected = false
         lastError = nil
-        ConditionsSnapshotReload.request()
+        ConditionsReloadCenter.shared.requestReload()
     }
 }

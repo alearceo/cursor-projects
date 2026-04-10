@@ -286,7 +286,7 @@ private enum WeatherCode {
     }
 }
 
-private enum ScoreEngine {
+enum ScoreEngine {
     static func compute(
         apparentF: Double?,
         dryBulbF: Double?,
@@ -490,7 +490,7 @@ private enum ScoreEngine {
 }
 
 /// Environmental comfort, visibility, optional delayed crime-incident density (third-party API), and weather alerts.
-private enum AwarenessEngine {
+enum AwarenessEngine {
     static func compute(
         isDay: Int?,
         apparentF: Double?,

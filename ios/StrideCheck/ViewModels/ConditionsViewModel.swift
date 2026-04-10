@@ -8,11 +8,12 @@ final class ConditionsViewModel: ObservableObject {
     @Published var snapshot: ConditionsSnapshot?
     @Published var zipInput = ""
 
-    private let service = ConditionsService()
+    private let service: any ConditionsFetching
     /// Supersedes in-flight loads when pull-to-refresh overlaps location updates (or vice versa).
     private var loadSequence = 0
 
-    init() {
+    init(conditionsService: any ConditionsFetching = ConditionsService()) {
+        self.service = conditionsService
         snapshot = SnapshotCache.load()
         if let snap = snapshot {
             RunIndexWidgetExporter.publish(snap)
@@ -69,16 +70,5 @@ final class ConditionsViewModel: ObservableObject {
         if let url = error as? URLError, url.code == .cancelled { return true }
         let ns = error as NSError
         return ns.domain == NSURLErrorDomain && ns.code == NSURLErrorCancelled
-    }
-}
-
-extension Notification.Name {
-    /// Posted when wearable credentials or run-index toggles change so Conditions can refetch `WearableReadinessAggregator` data.
-    static let strideCheckReloadConditionsSnapshot = Notification.Name("StrideCheck.reloadConditionsSnapshot")
-}
-
-enum ConditionsSnapshotReload {
-    static func request() {
-        NotificationCenter.default.post(name: .strideCheckReloadConditionsSnapshot, object: nil)
     }
 }

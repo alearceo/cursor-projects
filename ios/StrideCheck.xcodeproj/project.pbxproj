@@ -63,6 +63,14 @@
 		AA0000000000000000000266 /* RunIndexWidgetIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000167 /* RunIndexWidgetIntents.swift */; };
 		AA0000000000000000000221 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000156 /* WidgetKit.framework */; };
 		AA0000000000000000000235 /* StrideCheckRunIndexWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000146 /* StrideCheckRunIndexWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		AA0000000000000000000701 /* TopEdgeFrostFade.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000700 /* TopEdgeFrostFade.swift */; };
+		AA0000000000000000000703 /* ConditionsTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000702 /* ConditionsTabView.swift */; };
+		AA0000000000000000000705 /* RouteAnd511View.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000704 /* RouteAnd511View.swift */; };
+		AA0000000000000000000707 /* ConditionsReloadCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000706 /* ConditionsReloadCenter.swift */; };
+		AA0000000000000000000709 /* ConditionsFetching.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000708 /* ConditionsFetching.swift */; };
+		AA0000000000000000000730 /* SnapshotCacheTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000729 /* SnapshotCacheTests.swift */; };
+		AA0000000000000000000732 /* RunIndexWidgetPayloadTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000731 /* RunIndexWidgetPayloadTests.swift */; };
+		AA0000000000000000000734 /* ConditionsScoringTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000733 /* ConditionsScoringTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -72,6 +80,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = AA0000000000000000000236;
 			remoteInfo = StrideCheckRunIndexWidget;
+		};
+		AA0000000000000000000742 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AA0000000000000000000050 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AA0000000000000000000040;
+			remoteInfo = StrideCheck;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -93,6 +108,15 @@
 		AA0000000000000000000010 /* StrideCheck.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = StrideCheck.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA0000000000000000000011 /* StrideCheckApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StrideCheckApp.swift; sourceTree = "<group>"; };
 		AA0000000000000000000012 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		AA0000000000000000000700 /* TopEdgeFrostFade.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopEdgeFrostFade.swift; sourceTree = "<group>"; };
+		AA0000000000000000000702 /* ConditionsTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConditionsTabView.swift; sourceTree = "<group>"; };
+		AA0000000000000000000704 /* RouteAnd511View.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteAnd511View.swift; sourceTree = "<group>"; };
+		AA0000000000000000000706 /* ConditionsReloadCenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConditionsReloadCenter.swift; sourceTree = "<group>"; };
+		AA0000000000000000000708 /* ConditionsFetching.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConditionsFetching.swift; sourceTree = "<group>"; };
+		AA0000000000000000000720 /* StrideCheckTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StrideCheckTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA0000000000000000000729 /* SnapshotCacheTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapshotCacheTests.swift; sourceTree = "<group>"; };
+		AA0000000000000000000731 /* RunIndexWidgetPayloadTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunIndexWidgetPayloadTests.swift; sourceTree = "<group>"; };
+		AA0000000000000000000733 /* ConditionsScoringTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConditionsScoringTests.swift; sourceTree = "<group>"; };
 		AA0000000000000000000013 /* APIModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIModels.swift; sourceTree = "<group>"; };
 		AA0000000000000000000014 /* ConditionsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConditionsService.swift; sourceTree = "<group>"; };
 		AA0000000000000000000015 /* LocationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationService.swift; sourceTree = "<group>"; };
@@ -169,6 +193,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		AA0000000000000000000723 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -187,6 +218,7 @@
 			children = (
 				AA0000000000000000000031 /* StrideCheck */,
 				AA0000000000000000000245 /* StrideCheckRunIndexWidget */,
+				AA0000000000000000000740 /* StrideCheckTests */,
 				AA0000000000000000000032 /* Products */,
 				680425BF2F805055008C36E8 /* Recovered References */,
 			);
@@ -197,6 +229,10 @@
 			children = (
 				AA0000000000000000000011 /* StrideCheckApp.swift */,
 				AA0000000000000000000012 /* ContentView.swift */,
+				AA0000000000000000000700 /* TopEdgeFrostFade.swift */,
+				AA0000000000000000000702 /* ConditionsTabView.swift */,
+				AA0000000000000000000704 /* RouteAnd511View.swift */,
+				AA0000000000000000000706 /* ConditionsReloadCenter.swift */,
 				AA0000000000000000000246 /* WidgetShared */,
 				AA000000000000000000012E /* RouteTrafficMapView.swift */,
 				AA0000000000000000000133 /* WearableDataSourcesView.swift */,
@@ -217,8 +253,19 @@
 			children = (
 				AA0000000000000000000010 /* StrideCheck.app */,
 				AA0000000000000000000146 /* StrideCheckRunIndexWidget.appex */,
+				AA0000000000000000000720 /* StrideCheckTests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		AA0000000000000000000740 /* StrideCheckTests */ = {
+			isa = PBXGroup;
+			children = (
+				AA0000000000000000000729 /* SnapshotCacheTests.swift */,
+				AA0000000000000000000731 /* RunIndexWidgetPayloadTests.swift */,
+				AA0000000000000000000733 /* ConditionsScoringTests.swift */,
+			);
+			path = StrideCheckTests;
 			sourceTree = "<group>";
 		};
 		AA0000000000000000000033 /* Services */ = {
@@ -226,6 +273,7 @@
 			children = (
 				AA0000000000000000000013 /* APIModels.swift */,
 				AA0000000000000000000014 /* ConditionsService.swift */,
+				AA0000000000000000000708 /* ConditionsFetching.swift */,
 				AA0000000000000000000139 /* HeatColdStress.swift */,
 				AA0000000000000000000015 /* LocationService.swift */,
 				AA0000000000000000000019 /* StrideCheckHTTPSession.swift */,
@@ -332,6 +380,23 @@
 			productReference = AA0000000000000000000146 /* StrideCheckRunIndexWidget.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
+		AA0000000000000000000721 /* StrideCheckTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AA0000000000000000000728 /* Build configuration list for PBXNativeTarget "StrideCheckTests" */;
+			buildPhases = (
+				AA0000000000000000000722 /* Sources */,
+				AA0000000000000000000723 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				AA0000000000000000000741 /* PBXTargetDependency */,
+			);
+			name = StrideCheckTests;
+			productName = StrideCheckTests;
+			productReference = AA0000000000000000000720 /* StrideCheckTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -347,6 +412,10 @@
 					};
 					AA0000000000000000000236 = {
 						CreatedOnToolsVersion = 16.0;
+					};
+					AA0000000000000000000721 = {
+						CreatedOnToolsVersion = 16.0;
+						TestTargetID = AA0000000000000000000040;
 					};
 				};
 			};
@@ -365,6 +434,7 @@
 			targets = (
 				AA0000000000000000000040 /* StrideCheck */,
 				AA0000000000000000000236 /* StrideCheckRunIndexWidget */,
+				AA0000000000000000000721 /* StrideCheckTests */,
 			);
 		};
 /* End PBXProject section */
@@ -395,8 +465,13 @@
 			files = (
 				AA0000000000000000000001 /* StrideCheckApp.swift in Sources */,
 				AA0000000000000000000002 /* ContentView.swift in Sources */,
+				AA0000000000000000000701 /* TopEdgeFrostFade.swift in Sources */,
+				AA0000000000000000000703 /* ConditionsTabView.swift in Sources */,
+				AA0000000000000000000705 /* RouteAnd511View.swift in Sources */,
+				AA0000000000000000000707 /* ConditionsReloadCenter.swift in Sources */,
 				AA0000000000000000000003 /* APIModels.swift in Sources */,
 				AA0000000000000000000004 /* ConditionsService.swift in Sources */,
+				AA0000000000000000000709 /* ConditionsFetching.swift in Sources */,
 				AA0000000000000000000005 /* LocationService.swift in Sources */,
 				AA0000000000000000000008 /* StrideCheckHTTPSession.swift in Sources */,
 				AA0000000000000000000006 /* ConditionsViewModel.swift in Sources */,
@@ -453,6 +528,16 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		AA0000000000000000000722 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA0000000000000000000730 /* SnapshotCacheTests.swift in Sources */,
+				AA0000000000000000000732 /* RunIndexWidgetPayloadTests.swift in Sources */,
+				AA0000000000000000000734 /* ConditionsScoringTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -460,6 +545,11 @@
 			isa = PBXTargetDependency;
 			target = AA0000000000000000000236 /* StrideCheckRunIndexWidget */;
 			targetProxy = AA0000000000000000000240 /* PBXContainerItemProxy */;
+		};
+		AA0000000000000000000741 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = AA0000000000000000000040 /* StrideCheck */;
+			targetProxy = AA0000000000000000000742 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -675,6 +765,44 @@
 			};
 			name = Release;
 		};
+		AA0000000000000000000743 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = WD4KK7P28K;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.alearceo.StrideCheckTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/StrideCheck.app/StrideCheck";
+			};
+			name = Debug;
+		};
+		AA0000000000000000000744 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = WD4KK7P28K;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.alearceo.StrideCheckTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/StrideCheck.app/StrideCheck";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -701,6 +829,15 @@
 			buildConfigurations = (
 				AA0000000000000000000243 /* Debug */,
 				AA0000000000000000000244 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AA0000000000000000000728 /* Build configuration list for PBXNativeTarget "StrideCheckTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AA0000000000000000000743 /* Debug */,
+				AA0000000000000000000744 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
