@@ -9,9 +9,7 @@ enum CrimeIncidentsService {
     }
 
     static func fetchSummary(latitude: Double, longitude: Double) async -> Summary? {
-        let key = (Bundle.main.object(forInfoDictionaryKey: "CrimeometerAPIKey") as? String)?
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-        guard let key, !key.isEmpty else { return nil }
+        guard let key = StrideCheckSecrets.crimeometerAPIKey else { return nil }
 
         let end = Date()
         guard let start = Calendar.current.date(byAdding: .day, value: -30, to: end) else { return nil }

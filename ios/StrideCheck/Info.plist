@@ -20,16 +20,47 @@
 	<string>1</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.alearceo.StrideCheck.oauth</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>stridecheck</string>
+			</array>
+		</dict>
+	</array>
+	<key>UILaunchStoryboardName</key>
+	<string>LaunchScreen</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>StrideCheck uses your location to detect local running conditions automatically.</string>
 	<key>NSHealthShareUsageDescription</key>
-	<string>StrideCheck reads sleep, heart rate variability, and activity from Apple Health to adjust your run readiness when Oura, Whoop, or Apple Watch data is present.</string>
+	<string>StrideCheck reads sleep, heart rate variability, and activity from Apple Health to adjust your run readiness when Garmin, Oura, Whoop, or Apple Watch data is present.</string>
 	<key>NSHealthUpdateUsageDescription</key>
 	<string>StrideCheck does not write to Apple Health.</string>
 	<key>OuraPersonalAccessToken</key>
-	<string></string>
+	<string>$(OURA_PERSONAL_ACCESS_TOKEN)</string>
 	<key>CrimeometerAPIKey</key>
-	<string></string>
+	<string>$(CRIMEOMETER_API_KEY)</string>
+	<key>WhoopClientId</key>
+	<string>$(WHOOP_CLIENT_ID)</string>
+	<key>WhoopClientSecret</key>
+	<string>$(WHOOP_CLIENT_SECRET)</string>
+	<key>WhoopRedirectURI</key>
+	<string>stridecheck://whoop-oauth</string>
+	<key>StravaClientId</key>
+	<string>$(STRAVA_CLIENT_ID)</string>
+	<key>StravaClientSecret</key>
+	<string>$(STRAVA_CLIENT_SECRET)</string>
+	<key>StravaRedirectURI</key>
+	<string>stridecheck://localhost/strava-oauth</string>
+	<key>GarminConsumerKey</key>
+	<string>$(GARMIN_CONSUMER_KEY)</string>
+	<key>GarminConsumerSecret</key>
+	<string>$(GARMIN_CONSUMER_SECRET)</string>
+	<key>GarminRedirectURI</key>
+	<string>stridecheck://garmin-oauth</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSExceptionDomains</key>
@@ -71,6 +102,42 @@
 				<false/>
 			</dict>
 			<key>ouraring.com</key>
+			<dict>
+				<key>NSIncludesSubdomains</key>
+				<true/>
+				<key>NSExceptionRequiresForwardSecrecy</key>
+				<false/>
+				<key>NSRequiresCertificateTransparency</key>
+				<false/>
+			</dict>
+			<key>whoop.com</key>
+			<dict>
+				<key>NSIncludesSubdomains</key>
+				<true/>
+				<key>NSExceptionRequiresForwardSecrecy</key>
+				<false/>
+				<key>NSRequiresCertificateTransparency</key>
+				<false/>
+			</dict>
+			<key>strava.com</key>
+			<dict>
+				<key>NSIncludesSubdomains</key>
+				<true/>
+				<key>NSExceptionRequiresForwardSecrecy</key>
+				<false/>
+				<key>NSRequiresCertificateTransparency</key>
+				<false/>
+			</dict>
+			<key>arcgis.com</key>
+			<dict>
+				<key>NSIncludesSubdomains</key>
+				<true/>
+				<key>NSExceptionRequiresForwardSecrecy</key>
+				<false/>
+				<key>NSRequiresCertificateTransparency</key>
+				<false/>
+			</dict>
+			<key>garmin.com</key>
 			<dict>
 				<key>NSIncludesSubdomains</key>
 				<true/>

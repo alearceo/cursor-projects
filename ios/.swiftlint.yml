@@ -1,0 +1,9 @@
+only_rules:
+  - trailing_newline
+  - trailing_whitespace
+  - vertical_whitespace
+included:
+  - StrideCheck
+  - StrideCheckTests
+excluded:
+  - StrideCheckRunIndexWidget

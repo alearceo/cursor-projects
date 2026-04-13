@@ -65,8 +65,12 @@ struct ConditionsService {
         let crimeResult = await crimeSummary
         let wearableResult = await wearable
 
+        // Run index = ScoreEngine (+ wearables) only; AwarenessEngine below adds a separate score from night, NWS alerts, and crime—those do not change the run index.
         let envScore = ScoreEngine.compute(
             apparentF: weatherResult.current.apparentTemperature,
+            dryBulbF: weatherResult.current.temperature2m,
+            relativeHumidity: weatherResult.current.relativeHumidity2m,
+            windSpeedMph: weatherResult.current.windSpeed10m,
             gustMph: weatherResult.current.windGusts10m,
             weatherCode: weatherResult.current.weatherCode,
             usAQI: airResult?.current?.usAQI
@@ -77,6 +81,12 @@ struct ConditionsService {
             wearable: wearableResult
         )
         let verdict = ScoreEngine.verdict(for: merged.score)
+
+        let noThirdPartyForRunIndex = !WearableRunIndexPreferences.includeWhoopInRunIndex
+            && !WearableRunIndexPreferences.includeOuraInRunIndex
+            && !WearableRunIndexPreferences.includeGarminInRunIndex
+        let showRunIndexDataSourcesHint = noThirdPartyForRunIndex
+            && wearableResult.sourceLabel == WearableReadinessAggregator.noWearableSignalSourceLabel
 
         let awareness = AwarenessEngine.compute(
             isDay: weatherResult.current.isDay,
@@ -108,7 +118,8 @@ struct ConditionsService {
             airRows: airRows,
             hourly: hourly,
             alerts: alertsResult,
-            cachedAt: nil
+            cachedAt: nil,
+            showRunIndexDataSourcesHint: showRunIndexDataSourcesHint
         )
     }
 
@@ -272,277 +283,5 @@ private enum WeatherCode {
         case 95...99: return ("Thunderstorm", "⛈️")
         default: return ("Mixed", "🌡️")
         }
-    }
-}
-
-private enum ScoreEngine {
-    static func compute(apparentF: Double?, gustMph: Double?, weatherCode: Int?, usAQI: Double?) -> (score: Int, bullets: [String]) {
-        var score = 100
-        var bullets: [String] = []
-
-        if let f = apparentF {
-            if f >= 95 {
-                score -= 30
-                bullets.append("Very hot feels-like; hydrate and reduce effort.")
-            } else if f >= 88 {
-                score -= 22
-                bullets.append("High heat load; prioritize shade and fluids.")
-            } else if f <= 14 {
-                score -= 28
-                bullets.append("Bitter cold; cover skin and watch for slick surfaces.")
-            } else if f <= 28 {
-                score -= 16
-                bullets.append("Freezing possible; be careful on bridges and painted lines.")
-            }
-        }
-
-        if let gust = gustMph {
-            if gust >= 40 {
-                score -= 24
-                bullets.append("Strong gusts; route away from exposed corridors.")
-            } else if gust >= 32 {
-                score -= 14
-                bullets.append("Gusty winds; expect unstable footing in open blocks.")
-            } else if gust >= 25 {
-                score -= 8
-                bullets.append("Breezy conditions may affect pace consistency.")
-            }
-        }
-
-        if let code = weatherCode {
-            if code >= 95 {
-                score -= 35
-                bullets.append("Thunderstorm risk; postpone if lightning is nearby.")
-            } else if [65, 75, 82, 86].contains(code) {
-                score -= 28
-                bullets.append("Heavy precipitation; slippery surfaces likely.")
-            } else if isWet(code) {
-                score -= 18
-                bullets.append("Wet roads; increase caution at crossings and turns.")
-            } else if code == 45 || code == 48 {
-                score -= 10
-                bullets.append("Low visibility; choose well-lit, lower-traffic routes.")
-            }
-        }
-
-        if let aqi = usAQI {
-            if aqi >= 151 {
-                score -= 30
-                bullets.append("Unhealthy AQI; shorten run or move indoors.")
-            } else if aqi >= 101 {
-                score -= 18
-                bullets.append("Sensitive groups should limit prolonged effort.")
-            } else if aqi >= 51 {
-                score -= 6
-                bullets.append("Moderate AQI; monitor effort near heavy traffic.")
-            }
-        }
-
-        if bullets.isEmpty {
-            bullets.append("Conditions look favorable for a city run.")
-        }
-
-        return (max(0, min(100, score)), bullets)
-    }
-
-    static func applyWearable(
-        baseScore: Int,
-        bullets: [String],
-        wearable: WearableRunReadiness
-    ) -> (score: Int, bullets: [String], rows: [(String, String)]) {
-        var score = baseScore
-        var b = bullets
-        var rows: [(String, String)] = [("Data source", wearable.sourceLabel)]
-
-        let hasSignal = wearable.readinessScore0to100 != nil
-            || wearable.sleepHours != nil
-            || wearable.hrvSDNNMs != nil
-            || wearable.strainProxy0to21 != nil
-
-        guard hasSignal else {
-            return (score, b, rows)
-        }
-
-        var delta = 0
-
-        if let r = wearable.readinessScore0to100 {
-            rows.append(("Oura readiness", "\(r)"))
-            if r < 55 {
-                delta -= 14
-                b.append("Wearables: readiness is low; shorten intensity until you rebound.")
-            } else if r < 72 {
-                delta -= 7
-                b.append("Wearables: readiness is middling; cap hard intervals.")
-            }
-        }
-
-        if let h = wearable.sleepHours {
-            rows.append(("Recent sleep", String(format: "%.1f h", h)))
-            if h < 5 {
-                delta -= 12
-                b.append("Wearables: sleep looks short; prioritize easy effort.")
-            } else if h < 6.2 {
-                delta -= 6
-                b.append("Wearables: lighter sleep; keep the run conversational.")
-            }
-        }
-
-        if let hrv = wearable.hrvSDNNMs {
-            rows.append(("Latest HRV (SDNN)", String(format: "%.0f ms", hrv)))
-            if hrv < 22 {
-                delta -= 8
-                b.append("Wearables: HRV looks suppressed; favor recovery pacing.")
-            } else if hrv < 32 {
-                delta -= 4
-            }
-        }
-
-        if let s = wearable.strainProxy0to21 {
-            rows.append(("Strain proxy", String(format: "%.0f / 21", min(21, s))))
-            if s >= 16 {
-                delta -= 8
-                b.append("Wearables: prior-day load looks high; ease today’s training.")
-            } else if s >= 12 {
-                delta -= 4
-            }
-        }
-
-        score = max(0, min(100, score + delta))
-        return (score, b, rows)
-    }
-
-    static func verdict(for score: Int) -> String {
-        switch score {
-        case 80...100: return "Good window to run."
-        case 60..<80: return "Runnable; adjust pace and gear."
-        case 40..<60: return "Challenging; choose safer routes."
-        default: return "Rough conditions; consider indoor backup."
-        }
-    }
-
-    private static func isWet(_ code: Int) -> Bool {
-        return (51...67).contains(code) || (71...77).contains(code) || (80...82).contains(code) || (85...99).contains(code)
-    }
-}
-
-/// Environmental comfort, visibility, optional delayed crime-incident density (third-party API), and weather alerts.
-private enum AwarenessEngine {
-    static func compute(
-        isDay: Int?,
-        apparentF: Double?,
-        gustMph: Double?,
-        weatherCode: Int?,
-        usAQI: Double?,
-        alerts: [NWSAlert],
-        crime: CrimeIncidentsService.Summary?
-    ) -> (score: Int, verdict: String, bullets: [String]) {
-        var score = 100
-        var bullets: [String] = []
-
-        let night = (isDay == 0)
-        if night {
-            score -= 18
-            bullets.append("After dark, visibility and surface cues drop; favor lit, familiar streets.")
-        }
-
-        if let code = weatherCode {
-            if code == 45 || code == 48 {
-                score -= 14
-                bullets.append("Fog or low cloud base cuts sightlines; stay wider from traffic.")
-            }
-            if code >= 95 {
-                score -= 28
-                bullets.append("Storm conditions; postpone or shorten outdoor segments.")
-            } else if isWet(code) {
-                score -= 12
-                bullets.append("Wet surfaces reduce grip; slow for paint, metal plates, and leaves.")
-                if night {
-                    score -= 10
-                    bullets.append("Wet plus low light compounds crossing risk; use marked crosswalks.")
-                }
-            }
-        }
-
-        if let gust = gustMph, gust >= 36 {
-            score -= 10
-            bullets.append("Strong wind on open blocks can feel exposed; consider sheltered corridors.")
-        }
-
-        if let aqi = usAQI, aqi >= 151 {
-            score -= 12
-            bullets.append("Unhealthy air near traffic; shorten time on busy arterials.")
-        }
-
-        if let f = apparentF {
-            if f >= 92 {
-                score -= 8
-                bullets.append("High heat load builds quickly; hydrate and pick shade.")
-            } else if f <= 20 {
-                score -= 8
-                bullets.append("Cold stress; cover skin and watch for ice on bridges.")
-            }
-        }
-
-        let severeAlert = alerts.contains { alert in
-            let s = (alert.severity ?? "").lowercased()
-            return s.contains("extreme") || s.contains("severe")
-        }
-        if severeAlert {
-            score -= 12
-            bullets.append("High-severity weather alerts are active; confirm timing before you leave.")
-        } else if !alerts.isEmpty {
-            score -= 4
-            bullets.append("Weather alerts in effect; skim details before locking a route.")
-        }
-
-        if let crime {
-            let n = crime.incidentCount
-            if n >= 90 {
-                score -= 30
-                bullets.append(
-                    "Crime feed: very high reported incident volume within ~\(Int(crime.radiusMiles)) mi over \(crime.windowDays) days; favor busier, well-lit routes you know."
-                )
-            } else if n >= 50 {
-                score -= 22
-                bullets.append(
-                    "Crime feed: elevated reported incidents (~\(n) in ~\(Int(crime.radiusMiles)) mi / \(crime.windowDays) d); add daylight or a buddy if you feel unsure."
-                )
-            } else if n >= 25 {
-                score -= 14
-                bullets.append(
-                    "Crime feed: moderate reported incidents (~\(n) nearby); stay aware at crossings and parking exits."
-                )
-            } else if n > 0 {
-                score -= 6
-                bullets.append(
-                    "Crime feed: \(n) reported incidents in the search radius; cross-check local police or neighborhood sources."
-                )
-            } else {
-                bullets.append(
-                    "Crime feed: no incidents returned for this window — reporting may be sparse or filtered."
-                )
-            }
-            bullets.append(
-                "Reported incidents are incomplete, delayed, and vary by agency coverage — not a real-time personal safety guarantee."
-            )
-        }
-
-        if bullets.isEmpty {
-            bullets.append("Environmental cues look ordinary; still share plans if running solo.")
-        }
-
-        let finalScore = max(0, min(100, score))
-        let verdict: String
-        switch finalScore {
-        case 80...100: verdict = "Environment favors confident pacing."
-        case 60..<80: verdict = "Runnable with a few visibility or comfort cautions."
-        case 40..<60: verdict = "More environmental friction; shorten or reroute."
-        default: verdict = "Harsh conditions outdoors; delay or move inside."
-        }
-        return (finalScore, verdict, bullets)
-    }
-
-    private static func isWet(_ code: Int) -> Bool {
-        (51...67).contains(code) || (71...77).contains(code) || (80...82).contains(code) || (85...99).contains(code)
     }
 }

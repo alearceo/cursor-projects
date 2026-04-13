@@ -1,2 +1,0 @@
-Target dependency graph (1 target)
-Target 'StrideCheck' in project 'StrideCheck' (no dependencies)

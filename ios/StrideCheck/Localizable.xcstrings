@@ -1,0 +1,160 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "StrideCheck" : {
+      "comment" : "App display name / brand header",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "StrideCheck"
+          }
+        }
+      }
+    },
+    "Road conditions for city runners" : {
+      "comment" : "App subtitle shown in the Conditions tab header",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Road conditions for city runners"
+          }
+        }
+      }
+    },
+    "Use Current Location" : {
+      "comment" : "Button label — triggers GPS-based conditions fetch",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use Current Location"
+          }
+        }
+      }
+    },
+    "Zip fallback (optional)" : {
+      "comment" : "Zip code text field placeholder",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zip fallback (optional)"
+          }
+        }
+      }
+    },
+    "Loading runner conditions..." : {
+      "comment" : "Progress view label shown while fetching conditions",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading runner conditions..."
+          }
+        }
+      }
+    },
+    "Offline snapshot" : {
+      "comment" : "Offline banner title — shown when displaying cached data",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Offline snapshot"
+          }
+        }
+      }
+    },
+    "Run Index" : {
+      "comment" : "Score card section title",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Run Index"
+          }
+        }
+      }
+    },
+    "Route awareness" : {
+      "comment" : "Score card section title for route awareness",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Route awareness"
+          }
+        }
+      }
+    },
+    "Strong run alerts" : {
+      "comment" : "Toggle label for local push notifications on strong run conditions",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Strong run alerts"
+          }
+        }
+      }
+    },
+    "Active Alerts" : {
+      "comment" : "Section header for NWS weather alerts",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Active Alerts"
+          }
+        }
+      }
+    },
+    "No active NWS alerts right now." : {
+      "comment" : "Placeholder shown when no weather alerts are active",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No active NWS alerts right now."
+          }
+        }
+      }
+    },
+    "Next 12 Hours" : {
+      "comment" : "Section header for hourly forecast strip",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next 12 Hours"
+          }
+        }
+      }
+    },
+    "Route & 511" : {
+      "comment" : "Tab bar item and bottom sheet header",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Route & 511"
+          }
+        }
+      }
+    },
+    "Find routes near here" : {
+      "comment" : "Button — triggers route suggestion fetch",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Find routes near here"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}
