@@ -94,7 +94,7 @@ struct ConditionsTabView: View {
         }
         .padding(AppTheme.Spacing.cardPadding)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .strideCard(strokeOpacity: 0.12)
+        .strideInstrumentCard(strokeOpacity: 0.12)
     }
 
     private var locationControls: some View {
@@ -149,7 +149,7 @@ struct ConditionsTabView: View {
             }
             .padding(AppTheme.Spacing.cardPadding - 2)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .strideCard(strokeOpacity: 0.12)
+            .strideInstrumentCard(strokeOpacity: 0.12)
         }
         .buttonStyle(.plain)
     }
@@ -167,7 +167,7 @@ struct ConditionsTabView: View {
         }
         .tint(AppTheme.accent)
         .padding(AppTheme.Spacing.cardPadding - 2)
-        .strideCard(strokeOpacity: 0.12)
+        .strideInstrumentCard(strokeOpacity: 0.12)
         .onChange(of: notifyStrongWindows) { _, on in
             if on {
                 Task { _ = await RunWindowNotifier.requestAuthorizationIfNeeded() }
@@ -295,7 +295,7 @@ struct ConditionsTabView: View {
         }
         .padding(AppTheme.Spacing.cardPadding)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .strideCard(strokeOpacity: 0.10)
+        .strideInstrumentCard(strokeOpacity: 0.10)
         .overlay(
             RoundedRectangle(cornerRadius: AppTheme.Corner.card, style: .continuous)
                 .strokeBorder(tier.accentColor.opacity(0.55), lineWidth: 2)
@@ -316,7 +316,7 @@ struct ConditionsTabView: View {
                     .font(StrideFont.scoreLarge(34))
                     .foregroundStyle(Color.strideInk)
                 Text("/ 100")
-                    .font(.caption.design(.monospaced))
+                    .font(.system(.caption, design: .monospaced))
                     .foregroundStyle(Color.strideInkSecondary)
                 Spacer()
             }
@@ -361,7 +361,7 @@ struct ConditionsTabView: View {
         }
         .padding(AppTheme.Spacing.cardPadding)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .strideCard(strokeOpacity: 0.12)
+        .strideInstrumentCard(strokeOpacity: 0.12)
     }
 
     private func hourlyStrip(_ items: [HourlyDisplay]) -> some View {
@@ -395,7 +395,7 @@ struct ConditionsTabView: View {
         }
         .padding(AppTheme.Spacing.cardPadding)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .strideCard(strokeOpacity: 0.12)
+        .strideInstrumentCard(strokeOpacity: 0.12)
     }
 
     private func alertsSection(_ alerts: [NWSAlert]) -> some View {
@@ -429,6 +429,6 @@ struct ConditionsTabView: View {
         }
         .padding(AppTheme.Spacing.cardPadding)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .strideCard(strokeOpacity: 0.12)
+        .strideInstrumentCard(strokeOpacity: 0.12)
     }
 }

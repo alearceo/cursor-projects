@@ -39,11 +39,12 @@ struct RunIndexWidgetEntryView: View {
 
     // MARK: - Background
 
+    /// Home-screen widget base matches in-app `Color.strideCanvas` (telemetry).
     private var smallWidgetBackground: some View {
         let base = colorScheme == .dark
-            ? Color(red: 0.11, green: 0.12, blue: 0.14)
-            : Color(red: 0.97, green: 0.98, blue: 0.99)
-        let wash = runIndexAccent.opacity(colorScheme == .dark ? 0.18 : 0.10)
+            ? Color(red: 0.047, green: 0.047, blue: 0.059)
+            : Color(red: 0.949, green: 0.941, blue: 0.922)
+        let wash = runIndexAccent.opacity(colorScheme == .dark ? 0.12 : 0.08)
         return ZStack {
             ContainerRelativeShape().fill(base)
             ContainerRelativeShape().fill(
@@ -110,8 +111,7 @@ struct RunIndexWidgetEntryView: View {
 
                     VStack(alignment: .leading, spacing: 3) {
                         Text("\(entry.payload.score)")
-                            .font(.system(size: 38, weight: .bold, design: .rounded))
-                            .monospacedDigit()
+                            .font(.system(size: 38, weight: .heavy, design: .monospaced))
                             .foregroundStyle(runIndexAccent)
                             .lineLimit(1)
                             .accessibilityLabel("Run Index score \(entry.payload.score)")
@@ -163,8 +163,7 @@ struct RunIndexWidgetEntryView: View {
                         .frame(width: 3, height: 14)
 
                     Text("\(entry.payload.awarenessScore)")
-                        .font(.system(size: 22, weight: .bold, design: .rounded))
-                        .monospacedDigit()
+                        .font(.system(size: 22, weight: .heavy, design: .monospaced))
                         .foregroundStyle(routeAccent)
                         .lineLimit(1)
                         .accessibilityLabel("Route score \(entry.payload.awarenessScore)")
@@ -204,8 +203,7 @@ struct RunIndexWidgetEntryView: View {
 
             VStack(alignment: .leading, spacing: 3) {
                 Text("\(entry.payload.score)")
-                    .font(.system(size: 34, weight: .bold, design: .rounded))
-                    .monospacedDigit()
+                    .font(.system(size: 34, weight: .heavy, design: .monospaced))
                     .foregroundStyle(runIndexAccent)
                     .lineLimit(1)
 
@@ -233,8 +231,7 @@ struct RunIndexWidgetEntryView: View {
                 .accessibilityHidden(true)
 
             Text("\(entry.payload.awarenessScore)")
-                .font(.system(size: 16, weight: .bold, design: .rounded))
-                .monospacedDigit()
+                .font(.system(size: 16, weight: .heavy, design: .monospaced))
                 .foregroundStyle(routeAccent)
                 .lineLimit(1)
                 .layoutPriority(2)
@@ -268,7 +265,7 @@ struct RunIndexWidgetEntryView: View {
     private var circularContent: some View {
         VStack(spacing: 0) {
             Text("\(entry.payload.score)")
-                .font(.system(.title2, design: .rounded).weight(.bold))
+                .font(.system(.title2, design: .monospaced).weight(.heavy))
             Text(String(entry.payload.tierLabel.prefix(1)))
                 .font(.caption2.weight(.bold))
                 .foregroundStyle(.secondary)
@@ -279,7 +276,7 @@ struct RunIndexWidgetEntryView: View {
     private var rectangularContent: some View {
         HStack(alignment: .center, spacing: 8) {
             Text("\(entry.payload.score)")
-                .font(.system(.title, design: .rounded).weight(.bold))
+                .font(.system(.title, design: .monospaced).weight(.heavy))
                 .foregroundStyle(runIndexAccent)
             VStack(alignment: .leading, spacing: 2) {
                 Text("Run Index · \(entry.payload.tierLabel)")

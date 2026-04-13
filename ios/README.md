@@ -23,6 +23,12 @@ Native SwiftUI app for runner-focused conditions: weather, air quality, NWS aler
 - No transparency in the master so App Store validation stays straightforward.
 - If a wider master is produced first, **center-crop to square** then export **1024×1024** (no letterboxing required when the asset is already square).
 
+## UI theme (race telemetry)
+
+- **Source of truth:** `StrideCheck/AppTheme.swift` — semantic `Color.strideCanvas` / `strideSurface` / `strideInk` / …, electric amber `AppTheme.accent`, `StrideFont` (28pt black brand title, monospaced scores), `StrideTelemetryBackground` (canvas + dot grid), `strideInstrumentCard` (12pt corners, hairline stroke), `StrideLeftBarBanner` (log-style rail).
+- **Dot grid:** 18pt spacing, ~0.5pt dots, ink opacity **0.045** (dark) / **0.065** (light). The grid `Canvas` is flattened with **`drawingGroup()`** to cut overdraw when scrolling above it.
+- **Widget parity:** `StrideCheckRunIndexWidget/RunIndexWidgetEntryView.swift` uses the same **canvas RGB** as `strideCanvas` for system small/medium home backgrounds and **monospaced heavy** for score numerics (tier colors unchanged).
+
 ## Project layout
 
 

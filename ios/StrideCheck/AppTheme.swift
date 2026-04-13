@@ -21,7 +21,6 @@ enum AppTheme {
 
     /// Electric amber — the sole accent; used for CTAs, score ring, tab tint.
     static let accent = Color(red: 0.961, green: 0.718, blue: 0.0)
-    static let accentMuted = Color(red: 0.961, green: 0.718, blue: 0.0).opacity(0.25)
 }
 
 // MARK: - Semantic palette
@@ -73,33 +72,6 @@ extension Color {
         })
     }
 
-    /// Warning / hint banners (amber-tinted).
-    static var strideWarningFill: Color {
-        Color(uiColor: UIColor { tc in
-            tc.userInterfaceStyle == .dark
-                ? UIColor(red: 0.961, green: 0.718, blue: 0.0, alpha: 0.18)
-                : UIColor(red: 0.961, green: 0.718, blue: 0.0, alpha: 0.15)
-        })
-    }
-
-    /// Error banners.
-    static var strideDangerFill: Color {
-        Color(uiColor: UIColor { tc in
-            tc.userInterfaceStyle == .dark
-                ? UIColor(red: 0.95, green: 0.28, blue: 0.32, alpha: 0.18)
-                : UIColor(red: 0.95, green: 0.32, blue: 0.35, alpha: 0.12)
-        })
-    }
-
-    /// Offline / info notices.
-    static var strideInfoFill: Color {
-        Color(uiColor: UIColor { tc in
-            tc.userInterfaceStyle == .dark
-                ? UIColor(red: 0.961, green: 0.718, blue: 0.0, alpha: 0.12)
-                : UIColor(red: 0.961, green: 0.718, blue: 0.0, alpha: 0.08)
-        })
-    }
-
     /// Route awareness card background tint.
     static var strideRouteAwarenessTint: Color {
         Color(uiColor: UIColor { tc in
@@ -113,9 +85,9 @@ extension Color {
 // MARK: - Typography (instrument-grade — no SF Rounded)
 
 enum StrideFont {
-    /// App title / brand header — condensed black.
+    /// App title / brand header — black, telemetry panel header (size matches spec).
     static var heroTitle: Font {
-        .system(size: 32, weight: .black)
+        .system(size: 28, weight: .black)
     }
     static var brandSubtitle: Font {
         .system(.subheadline, design: .default).weight(.regular)
@@ -147,9 +119,10 @@ struct StrideTelemetryBackground: View {
             GeometryReader { geo in
                 Canvas { ctx, size in
                     let spacing: CGFloat = 18
-                    let dotRadius: CGFloat = 0.9
-                    let opacity: Double = scheme == .dark ? 0.06 : 0.08
-                    let dotColor = Color.strideInk.opacity(opacity)
+                    // ~0.5pt diameter dots per telemetry spec
+                    let dotRadius: CGFloat = 0.25
+                    let dotOpacity = scheme == .dark ? 0.045 : 0.065
+                    let dotColor = Color.strideInk.opacity(dotOpacity)
                     var col = spacing
                     while col < size.width {
                         var row = spacing
@@ -167,6 +140,8 @@ struct StrideTelemetryBackground: View {
                     }
                 }
                 .frame(width: geo.size.width, height: geo.size.height)
+                // Flatten static grid to reduce overdraw while scrolling content above.
+                .drawingGroup()
             }
         }
         .ignoresSafeArea()
@@ -191,8 +166,13 @@ private struct StrideInstrumentCardModifier: ViewModifier {
 
 extension View {
     /// Instrument-panel card: flat surface, hairline border, sharp corners, no shadow.
-    func strideCard(strokeOpacity: Double = 0.10, shadowOpacity: Double = 0) -> some View {
+    func strideInstrumentCard(strokeOpacity: Double = 0.10) -> some View {
         modifier(StrideInstrumentCardModifier(strokeOpacity: strokeOpacity))
+    }
+
+    /// Legacy alias — prefer `strideInstrumentCard`.
+    func strideCard(strokeOpacity: Double = 0.10, shadowOpacity: Double = 0) -> some View {
+        strideInstrumentCard(strokeOpacity: strokeOpacity)
     }
 
     /// List / form screens: hide default List background, apply dot-grid canvas.
@@ -218,6 +198,7 @@ struct StrideLeftBarBanner<Content: View>: View {
             content()
             Spacer(minLength: 0)
         }
+        .padding(.leading, 4)
         .padding(.vertical, 12)
         .padding(.trailing, 12)
     }
