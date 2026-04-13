@@ -57,11 +57,28 @@ final class ConditionsViewModel: ObservableObject {
         } catch {
             guard seq == loadSequence else { return }
             guard !isBenignCancellation(error) else { return }
-            errorMessage = error.localizedDescription
+            errorMessage = Self.userFacingLoadError(error)
             if snapshot == nil {
                 snapshot = SnapshotCache.load()
             }
         }
+    }
+
+    private static func userFacingLoadError(_ error: Error) -> String {
+        if let conditions = error as? ConditionsError {
+            return conditions.errorDescription ?? "Couldn’t refresh conditions. Check your connection and try again."
+        }
+        if error is CancellationError {
+            return "Request was cancelled."
+        }
+        if let url = error as? URLError, url.code == .cancelled {
+            return "Request was cancelled."
+        }
+        let ns = error as NSError
+        if ns.domain == NSURLErrorDomain && ns.code == NSURLErrorCancelled {
+            return "Request was cancelled."
+        }
+        return "Couldn’t refresh conditions. Check your connection and try again."
     }
 
     /// Pull-to-refresh and overlapping loads cancel the previous task; that must not surface as a user-visible error.

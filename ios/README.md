@@ -10,7 +10,7 @@
 | **Widget** | Added **`.systemMedium`** family: two-column layout (Run Index hero left, Route Awareness right, context line, location). All widget variants now have explicit `accessibilityLabel` strings (combined element with full score/tier/location phrase). |
 | **Repository hygiene** | `ios/.derived/` (≈2 000 Xcode build intermediates) untracked from git; `.gitignore` updated. Web prototype (`app.js`, `index.html`, `styles.css`) removed — app is the canonical product. |
 | **Dead code** | `RunIndexWidgetState` and `RunIndexWidgetIntents` files cleaned to minimal stubs; pagination intents fully removed. |
-| **CI** | GitHub Actions workflow at `.github/workflows/ios-ci.yml` — builds + tests on every push to main / feature / widget branches. |
+| **CI** | GitHub Actions workflow at `.github/workflows/ios-ci.yml` — builds + tests on every push to main / feature / widget branches. The workflow picks a concrete **iPhone** simulator from `xcodebuild -showdestinations` (prefers **iPhone 16**) so jobs keep working when runner images change; install tools with `brew install swiftlint xcpretty` (see workflow). |
 | **Tests** | Unit test files added under `ios/StrideCheckTests/` (SnapshotCache round-trip, RunIndexWidgetPayload Codable, tier banding). See `ios/StrideCheckTests/README.md` for Xcode target wiring. |
 | **Localization** | `Localizable.xcstrings` (String Catalog) added with all user-visible English strings as a baseline for future i18n. |
 

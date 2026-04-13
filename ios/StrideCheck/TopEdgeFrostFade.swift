@@ -2,8 +2,10 @@ import SwiftUI
 import UIKit
 
 enum TopEdgeFrostFadeStyle {
-    /// Scroll content under status bar: tint with grouped background then frosted mask.
+    /// Scroll content under status bar: tint with editorial canvas then frosted mask.
     case groupedScroll
+    /// Same tint as Conditions tab mesh canvas (dynamic).
+    case editorialScroll
     /// Map under status bar: frost only (same material as `route511Card`).
     case map
 }
@@ -13,6 +15,15 @@ enum TopEdgeFrostFadeStyle {
 struct TopEdgeFrostFade: View {
     var style: TopEdgeFrostFadeStyle
 
+    private var tintColor: Color {
+        switch style {
+        case .groupedScroll, .editorialScroll:
+            return Color.strideCanvas
+        case .map:
+            return Color.clear
+        }
+    }
+
     var body: some View {
         GeometryReader { geo in
             let fadeHeight = geo.safeAreaInsets.top + 56
@@ -20,11 +31,11 @@ struct TopEdgeFrostFade: View {
             let groupedTintTail: CGFloat = 18
             VStack(spacing: 0) {
                 ZStack(alignment: .top) {
-                    if style == .groupedScroll {
+                    if style == .groupedScroll || style == .editorialScroll {
                         LinearGradient(
                             colors: [
-                                Color(uiColor: .systemGroupedBackground),
-                                Color(uiColor: .systemGroupedBackground).opacity(0)
+                                tintColor,
+                                tintColor.opacity(0)
                             ],
                             startPoint: .top,
                             endPoint: .bottom

@@ -16,9 +16,9 @@ enum RunIndexTier {
 
     var accentColor: Color {
         switch self {
-        case .good: return Color(red: 0.2, green: 0.72, blue: 0.38)
-        case .moderate: return Color(red: 0.95, green: 0.76, blue: 0.2)
-        case .poor: return Color(red: 0.92, green: 0.32, blue: 0.28)
+        case .good: return Color(red: 0.32, green: 0.9, blue: 0.52)
+        case .moderate: return Color(red: 0.98, green: 0.82, blue: 0.28)
+        case .poor: return Color(red: 1.0, green: 0.45, blue: 0.4)
         }
     }
 
@@ -26,18 +26,18 @@ enum RunIndexTier {
         switch self {
         case .good:
             return [
-                Color(red: 0.12, green: 0.55, blue: 0.32).opacity(0.35),
-                Color(red: 0.2, green: 0.72, blue: 0.38).opacity(0.12)
+                Color(red: 0.14, green: 0.62, blue: 0.4).opacity(0.42),
+                Color(red: 0.28, green: 0.88, blue: 0.55).opacity(0.18)
             ]
         case .moderate:
             return [
-                Color(red: 0.75, green: 0.55, blue: 0.1).opacity(0.35),
-                Color(red: 0.95, green: 0.76, blue: 0.2).opacity(0.12)
+                Color(red: 0.82, green: 0.58, blue: 0.12).opacity(0.42),
+                Color(red: 0.98, green: 0.82, blue: 0.28).opacity(0.2)
             ]
         case .poor:
             return [
-                Color(red: 0.65, green: 0.15, blue: 0.12).opacity(0.35),
-                Color(red: 0.92, green: 0.32, blue: 0.28).opacity(0.12)
+                Color(red: 0.75, green: 0.18, blue: 0.14).opacity(0.45),
+                Color(red: 1.0, green: 0.45, blue: 0.4).opacity(0.22)
             ]
         }
     }

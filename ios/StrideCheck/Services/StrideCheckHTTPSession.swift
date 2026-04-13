@@ -55,7 +55,7 @@ extension URLSession {
     /// Fetches `url` retrying up to `maxAttempts` times with exponential back-off on transient errors.
     ///
     /// Back-off schedule (seconds): 0.5 → 1.0 → 2.0 (for maxAttempts = 3).
-    /// Non-retryable: cancellation, 4xx HTTP responses.
+    /// Non-retryable: cancellation, client auth failures (`userAuthenticationRequired`).
     func dataWithRetry(
         from url: URL,
         maxAttempts: Int = 3
@@ -71,10 +71,7 @@ extension URLSession {
                 if attempt >= maxAttempts { throw error }
                 if error is CancellationError { throw error }
                 if let urlErr = error as? URLError, urlErr.code == .cancelled { throw error }
-                if let http = (error as? URLError) {
-                    // Don't retry client errors (4xx) — they won't change without a different request.
-                    if http.code == .userAuthenticationRequired { throw error }
-                }
+                if let urlErr = error as? URLError, urlErr.code == .userAuthenticationRequired { throw error }
                 try await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
                 delay = min(delay * 2, 4)
             }
@@ -82,6 +79,8 @@ extension URLSession {
     }
 
     /// Fetches `request` retrying up to `maxAttempts` times with exponential back-off on transient errors.
+    ///
+    /// Non-retryable: cancellation, client auth failures (`userAuthenticationRequired`), same as `dataWithRetry(from:)`.
     func dataWithRetry(
         for request: URLRequest,
         maxAttempts: Int = 3
@@ -97,6 +96,7 @@ extension URLSession {
                 if attempt >= maxAttempts { throw error }
                 if error is CancellationError { throw error }
                 if let urlErr = error as? URLError, urlErr.code == .cancelled { throw error }
+                if let urlErr = error as? URLError, urlErr.code == .userAuthenticationRequired { throw error }
                 try await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
                 delay = min(delay * 2, 4)
             }

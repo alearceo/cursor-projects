@@ -36,7 +36,7 @@ struct RouteAnd511View: View {
                     routeBottomSheet(expandedHeight: expandedH, collapsedHeight: collapsedH)
                 }
             }
-            .background(Color(uiColor: .systemGroupedBackground))
+            .background(Color.strideCanvas)
             .toolbar(.hidden, for: .navigationBar)
             .overlay(alignment: .top) {
                 TopEdgeFrostFade(style: .map)
@@ -154,7 +154,7 @@ struct RouteAnd511View: View {
             HStack(alignment: .center, spacing: 10) {
                 Image(systemName: "map.fill")
                     .font(.title3)
-                    .foregroundStyle(.teal)
+                    .foregroundStyle(AppTheme.accent)
                 VStack(alignment: .leading, spacing: 3) {
                     Text(placeName ?? "Routes & map sources")
                         .font(.subheadline.weight(.semibold))
@@ -230,6 +230,7 @@ struct RouteAnd511View: View {
                 .frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
+            .tint(AppTheme.accent)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -260,7 +261,7 @@ struct RouteAnd511View: View {
                 .frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
-            .tint(.green)
+            .tint(AppTheme.accent)
             .disabled(coordinate == nil || isLoadingSuggestions)
             Text("Uses Apple walking directions and open elevation data. Not turn-by-turn navigation — verify roads and traffic yourself.")
                 .font(.caption2)
@@ -298,10 +299,14 @@ struct RouteAnd511View: View {
                 .buttonStyle(.plain)
             }
         }
-        .padding(12)
+        .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(uiColor: .tertiarySystemGroupedBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .background(Color.strideSurfaceSecondary)
+        .clipShape(RoundedRectangle(cornerRadius: AppTheme.Corner.pill, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: AppTheme.Corner.pill, style: .continuous)
+                .strokeBorder(Color.strideInk.opacity(0.1), lineWidth: 1)
+        )
     }
 
     private func detailLine(for run: SuggestedRouteRun) -> String {
@@ -364,10 +369,14 @@ struct RouteAnd511View: View {
                     .foregroundStyle(.secondary)
             }
         }
-        .padding(12)
+        .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(uiColor: .tertiarySystemGroupedBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .background(Color.strideSurfaceSecondary)
+        .clipShape(RoundedRectangle(cornerRadius: AppTheme.Corner.pill, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: AppTheme.Corner.pill, style: .continuous)
+                .strokeBorder(Color.strideInk.opacity(0.1), lineWidth: 1)
+        )
     }
 
     private var stravaCardSubtitle: String {
@@ -426,12 +435,13 @@ struct RouteAnd511View: View {
             )
         } else {
             ZStack {
-                Color(uiColor: .systemGroupedBackground)
+                Color.strideCanvas
                 ContentUnavailableView(
                     "Map needs a location",
                     systemImage: "map",
                     description: Text("Open the Conditions tab and load your area first.")
                 )
+                .foregroundStyle(Color.strideInk)
             }
         }
     }

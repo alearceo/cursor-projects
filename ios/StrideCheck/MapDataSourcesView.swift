@@ -101,8 +101,13 @@ struct MapDataSourcesView: View {
                 }
             }
         }
+        .strideListScreenChrome()
+        .listRowBackground(Color.strideSurface.opacity(0.94))
         .navigationTitle("Map data sources")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackground(Color.strideCanvas, for: .navigationBar)
+        .toolbarBackground(.visible, for: .navigationBar)
+        .tint(AppTheme.accent)
         .onAppear {
             stravaLink.refreshConnectionState()
             syncStravaCredentialsConfigured()

@@ -21,6 +21,7 @@ jobs:
       SCHEME: StrideCheck
       # `xcodebuild test` requires a concrete device; `build` can use generic.
       BUILD_DESTINATION: "generic/platform=iOS Simulator"
+      # Overwritten by "Resolve test simulator destination" when destinations are available.
       TEST_DESTINATION: "platform=iOS Simulator,name=iPhone 16,OS=latest"
 
     steps:
@@ -35,10 +36,62 @@ jobs:
           xcodebuild -version
           swift --version
 
-      - name: SwiftLint
+      - name: Install SwiftLint and xcpretty
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: "1"
         run: |
-          brew install swiftlint
+          brew install swiftlint xcpretty
           cd ios && swiftlint lint --strict
+
+      - name: Resolve test simulator destination
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 << 'PY'
+          import os
+          import re
+          import subprocess
+          import sys
+
+          proj = os.environ["XCODE_PROJECT"]
+          scheme = os.environ["SCHEME"]
+          result = subprocess.run(
+              ["xcodebuild", "-project", proj, "-scheme", scheme, "-showdestinations"],
+              check=True,
+              capture_output=True,
+              text=True,
+          )
+          out = (result.stdout or "") + (result.stderr or "")
+          lines = [
+              l.strip()
+              for l in out.splitlines()
+              if "platform:iOS Simulator" in l and "placeholder" not in l
+          ]
+
+          def parse(line: str):
+              m_name = re.search(r"name:([^,}]+)", line)
+              if not m_name:
+                  return None
+              name = m_name.group(1).strip()
+              m_os = re.search(r"OS:([^,}]+)", line)
+              os_ver = m_os.group(1).strip() if m_os else "latest"
+              return name, os_ver
+
+          candidates = []
+          for line in lines:
+              p = parse(line)
+              if p and p[0].startswith("iPhone"):
+                  candidates.append(p)
+          if not candidates:
+              print("No iPhone simulator destinations found in xcodebuild -showdestinations", file=sys.stderr)
+              sys.exit(1)
+          chosen = next((c for c in candidates if c[0] == "iPhone 16"), candidates[0])
+          name, os_ver = chosen
+          dest = f"platform=iOS Simulator,name={name},OS={os_ver}"
+          print(f"Resolved TEST_DESTINATION={dest}")
+          with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as env_file:
+              env_file.write(f"TEST_DESTINATION={dest}\n")
+          PY
 
       - name: List simulator destinations (diagnostic)
         continue-on-error: true
@@ -99,3 +152,4 @@ jobs:
           name: test-results-${{ github.run_number }}
           path: TestResults.xcresult
           retention-days: 14
+          if-no-files-found: warn

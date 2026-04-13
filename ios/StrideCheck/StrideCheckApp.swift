@@ -7,12 +7,12 @@ struct StrideCheckApp: App {
         WearableRunIndexPreferences.applyMigrationIfNeeded()
         WearableRunIndexPreferences.applyGarminToggleMigrationIfNeeded()
         StravaMapOverlayPreferences.applyMigrationIfNeeded()
+        StrideCheckAppearance.configureTabBarAccent()
     }
 
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .background(Color(uiColor: .systemGroupedBackground))
         }
     }
 }

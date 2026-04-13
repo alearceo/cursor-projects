@@ -33,7 +33,7 @@ struct ContentView: View {
         .environmentObject(whoopLink)
         .environmentObject(garminLink)
         .environmentObject(stravaLink)
-        .tint(.teal)
+        .tint(AppTheme.accent)
         .task {
             lastForegroundConditionsRefreshAt = Date()
             locationService.requestAccessAndLocation()

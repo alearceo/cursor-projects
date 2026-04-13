@@ -221,8 +221,13 @@ struct WearableDataSourcesView: View {
                 Text("Strava sign-in, API keys, and whether routes draw on the Route & 511 map.")
             }
         }
+        .strideListScreenChrome()
+        .listRowBackground(Color.strideSurface.opacity(0.94))
         .navigationTitle("Data sources")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackground(Color.strideCanvas, for: .navigationBar)
+        .toolbarBackground(.visible, for: .navigationBar)
+        .tint(AppTheme.accent)
         .task {
             await refreshHealthSummary()
         }
