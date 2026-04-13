@@ -71,7 +71,7 @@ struct MapDataSourcesView: View {
                             }
                         }
                         .buttonStyle(.borderedProminent)
-                        .tint(.orange)
+                        .tint(AppTheme.accent)
                         .disabled(stravaLink.isBusy || !stravaCredentialsConfigured)
                     }
                 }
@@ -80,7 +80,7 @@ struct MapDataSourcesView: View {
                         stravaLink.requestMapDataRefresh()
                     }
                     .buttonStyle(.borderedProminent)
-                    .tint(.orange)
+                    .tint(AppTheme.accent)
                 }
             } header: {
                 Text("Strava")

@@ -9,7 +9,7 @@ struct ConditionsTabView: View {
 
     var body: some View {
         ZStack {
-            StrideMeshBackground()
+            StrideTelemetryBackground()
             NavigationStack {
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: AppTheme.Spacing.section) {
@@ -60,28 +60,25 @@ struct ConditionsTabView: View {
         }
     }
 
-    private var brandBlock: some View {
-        HStack(alignment: .top, spacing: 14) {
-            RoundedRectangle(cornerRadius: 4, style: .continuous)
-                .fill(
-                    LinearGradient(
-                        colors: [AppTheme.accent, AppTheme.accent.opacity(0.45)],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                )
-                .frame(width: 5, height: 72)
-                .accessibilityHidden(true)
+    // MARK: Brand block — data-panel header style
 
-            VStack(alignment: .leading, spacing: 6) {
-                Text("StrideCheck")
+    private var brandBlock: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("STRIDECHECK")
                     .font(StrideFont.heroTitle)
                     .foregroundStyle(Color.strideInk)
+                    .tracking(1.5)
                 Text("Road conditions for city runners")
                     .font(StrideFont.brandSubtitle)
                     .foregroundStyle(Color.strideInkSecondary)
             }
-            Spacer(minLength: 0)
+            // Horizontal amber rule — telemetry section separator
+            Rectangle()
+                .fill(AppTheme.accent)
+                .frame(maxWidth: .infinity)
+                .frame(height: 1)
+                .accessibilityHidden(true)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -97,7 +94,7 @@ struct ConditionsTabView: View {
         }
         .padding(AppTheme.Spacing.cardPadding)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .strideCard(strokeOpacity: 0.18, shadowOpacity: 0.1)
+        .strideCard(strokeOpacity: 0.12)
     }
 
     private var locationControls: some View {
@@ -152,7 +149,7 @@ struct ConditionsTabView: View {
             }
             .padding(AppTheme.Spacing.cardPadding - 2)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .strideCard(strokeOpacity: 0.16, shadowOpacity: 0.08)
+            .strideCard(strokeOpacity: 0.12)
         }
         .buttonStyle(.plain)
     }
@@ -170,7 +167,7 @@ struct ConditionsTabView: View {
         }
         .tint(AppTheme.accent)
         .padding(AppTheme.Spacing.cardPadding - 2)
-        .strideCard(strokeOpacity: 0.16, shadowOpacity: 0.08)
+        .strideCard(strokeOpacity: 0.12)
         .onChange(of: notifyStrongWindows) { _, on in
             if on {
                 Task { _ = await RunWindowNotifier.requestAuthorizationIfNeeded() }
@@ -178,12 +175,12 @@ struct ConditionsTabView: View {
         }
     }
 
+    // MARK: Banners — left-bar / log-terminal style
+
     private func offlineBanner(_ date: Date) -> some View {
-        HStack(alignment: .top, spacing: 10) {
-            Image(systemName: "wifi.slash")
-                .foregroundStyle(AppTheme.accent)
+        StrideLeftBarBanner(barColor: AppTheme.accent) {
             VStack(alignment: .leading, spacing: 2) {
-                Text("Offline snapshot")
+                Label("Offline snapshot", systemImage: "wifi.slash")
                     .font(StrideFont.cardTitle)
                     .foregroundStyle(Color.strideInk)
                 Text("Showing cached data from \(SnapshotCache.formattedSavedAt(date)). Pull to refresh when you are back online.")
@@ -191,69 +188,47 @@ struct ConditionsTabView: View {
                     .foregroundStyle(Color.strideInkSecondary)
             }
         }
-        .padding(14)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.strideInfoFill)
-        .clipShape(RoundedRectangle(cornerRadius: AppTheme.Corner.pill, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: AppTheme.Corner.pill, style: .continuous)
-                .strokeBorder(Color.strideInk.opacity(0.12), lineWidth: 1)
-        )
     }
 
     private func errorBanner(_ text: String) -> some View {
-        Text(text)
-            .font(.footnote)
-            .foregroundStyle(Color.red)
-            .padding(12)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.strideDangerFill)
-            .clipShape(RoundedRectangle(cornerRadius: AppTheme.Corner.pill, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: AppTheme.Corner.pill, style: .continuous)
-                    .strokeBorder(Color.red.opacity(0.25), lineWidth: 1)
-            )
+        StrideLeftBarBanner(barColor: .red) {
+            Text(text)
+                .font(.footnote)
+                .foregroundStyle(Color.red)
+        }
     }
 
     private func runIndexDataSourcesHintBanner() -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(alignment: .top, spacing: 10) {
-                Image(systemName: "heart.slash")
-                    .foregroundStyle(AppTheme.accent)
+        StrideLeftBarBanner(barColor: AppTheme.accent) {
+            VStack(alignment: .leading, spacing: 8) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Run index needs a data source")
+                    Label("Run index needs a data source", systemImage: "heart.slash")
                         .font(StrideFont.cardTitle)
                         .foregroundStyle(Color.strideInk)
-                    Text("Apple Health isn’t contributing (access off, denied, or no HRV/sleep/activity yet), and Whoop/Oura aren’t turned on for the run index. Use Data sources to allow Health or enable a wearable.")
+                    Text("Apple Health isn't contributing (access off, denied, or no HRV/sleep/activity yet), and Whoop/Oura aren't turned on for the run index. Use Data sources to allow Health or enable a wearable.")
                         .font(.caption)
                         .foregroundStyle(Color.strideInkSecondary)
                 }
+                NavigationLink {
+                    WearableDataSourcesView()
+                } label: {
+                    Text("Open Data sources")
+                        .font(StrideFont.cardTitle)
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(AppTheme.accent)
             }
-            NavigationLink {
-                WearableDataSourcesView()
-            } label: {
-                Text("Open Data sources")
-                    .font(StrideFont.cardTitle)
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.borderedProminent)
-            .tint(AppTheme.accent)
         }
-        .padding(14)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.strideWarningFill)
-        .clipShape(RoundedRectangle(cornerRadius: AppTheme.Corner.pill, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: AppTheme.Corner.pill, style: .continuous)
-                .strokeBorder(Color.strideInk.opacity(0.1), lineWidth: 1)
-        )
     }
+
+    // MARK: Snapshot
 
     private func snapshotView(_ snap: ConditionsSnapshot) -> some View {
         VStack(alignment: .leading, spacing: 16) {
             VStack(alignment: .leading, spacing: 4) {
                 Text(snap.placeName)
-                    .font(.system(.title2, design: .rounded).weight(.bold))
+                    .font(.system(.title2, design: .default).weight(.bold))
                     .foregroundStyle(Color.strideInk)
                 Text(String(format: "%.4f, %.4f", snap.latitude, snap.longitude))
                     .font(.caption.monospacedDigit())
@@ -281,14 +256,11 @@ struct ConditionsTabView: View {
             HStack(alignment: .firstTextBaseline, spacing: 14) {
                 ZStack {
                     Circle()
-                        .fill(
-                            LinearGradient(
-                                colors: tier.gradient,
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
+                        .strokeBorder(tier.accentColor.opacity(0.55), lineWidth: 3)
                         .frame(width: 76, height: 76)
+                    Circle()
+                        .fill(tier.accentColor.opacity(0.12))
+                        .frame(width: 70, height: 70)
                     Text("\(score)")
                         .font(StrideFont.scoreLarge(30))
                         .foregroundStyle(Color.strideInk)
@@ -305,7 +277,7 @@ struct ConditionsTabView: View {
                             .font(.caption2.weight(.bold))
                             .padding(.horizontal, 8)
                             .padding(.vertical, 3)
-                            .background(tier.accentColor.opacity(0.28))
+                            .background(tier.accentColor.opacity(0.20))
                             .foregroundStyle(tier.accentColor)
                             .clipShape(Capsule())
                     }
@@ -323,7 +295,7 @@ struct ConditionsTabView: View {
         }
         .padding(AppTheme.Spacing.cardPadding)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .strideCard(strokeOpacity: 0.12, shadowOpacity: 0.14)
+        .strideCard(strokeOpacity: 0.10)
         .overlay(
             RoundedRectangle(cornerRadius: AppTheme.Corner.card, style: .continuous)
                 .strokeBorder(tier.accentColor.opacity(0.55), lineWidth: 2)
@@ -344,7 +316,7 @@ struct ConditionsTabView: View {
                     .font(StrideFont.scoreLarge(34))
                     .foregroundStyle(Color.strideInk)
                 Text("/ 100")
-                    .font(.caption)
+                    .font(.caption.design(.monospaced))
                     .foregroundStyle(Color.strideInkSecondary)
                 Spacer()
             }
@@ -380,14 +352,16 @@ struct ConditionsTabView: View {
                 HStack {
                     Text(row.0).foregroundStyle(Color.strideInkSecondary)
                     Spacer()
-                    Text(row.1).fontWeight(.semibold).foregroundStyle(Color.strideInk)
+                    Text(row.1)
+                        .font(StrideFont.dataValue)
+                        .foregroundStyle(Color.strideInk)
                 }
                 .font(.subheadline)
             }
         }
         .padding(AppTheme.Spacing.cardPadding)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .strideCard(strokeOpacity: 0.14, shadowOpacity: 0.08)
+        .strideCard(strokeOpacity: 0.12)
     }
 
     private func hourlyStrip(_ items: [HourlyDisplay]) -> some View {
@@ -400,20 +374,28 @@ struct ConditionsTabView: View {
                 HStack(spacing: 8) {
                     ForEach(items) { item in
                         VStack(spacing: 6) {
-                            Text(item.timeLabel).font(.caption2.monospacedDigit())
+                            Text(item.timeLabel)
+                                .font(.caption2.monospacedDigit())
+                                .foregroundStyle(Color.strideInkSecondary)
                             Text(item.icon).font(.title3)
-                            Text(item.rainChanceLabel).font(.caption2).foregroundStyle(Color.strideInkSecondary)
+                            Text(item.rainChanceLabel)
+                                .font(.caption2)
+                                .foregroundStyle(Color.strideInkSecondary)
                         }
                         .padding(8)
                         .background(Color.strideSurfaceSecondary)
                         .clipShape(RoundedRectangle(cornerRadius: AppTheme.Corner.chip, style: .continuous))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: AppTheme.Corner.chip, style: .continuous)
+                                .strokeBorder(Color.strideInk.opacity(0.08), lineWidth: 0.5)
+                        )
                     }
                 }
             }
         }
         .padding(AppTheme.Spacing.cardPadding)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .strideCard(strokeOpacity: 0.14, shadowOpacity: 0.08)
+        .strideCard(strokeOpacity: 0.12)
     }
 
     private func alertsSection(_ alerts: [NWSAlert]) -> some View {
@@ -429,24 +411,24 @@ struct ConditionsTabView: View {
                     .foregroundStyle(Color.strideInkSecondary)
             } else {
                 ForEach(alerts) { alert in
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(alert.headline).fontWeight(.bold).foregroundStyle(Color.strideInk)
-                        if let description = alert.description, !description.isEmpty {
-                            Text(description)
-                                .font(.footnote)
-                                .foregroundStyle(Color.strideInkSecondary)
-                                .lineLimit(4)
+                    StrideLeftBarBanner(barColor: AppTheme.accent) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(alert.headline)
+                                .fontWeight(.bold)
+                                .foregroundStyle(Color.strideInk)
+                            if let description = alert.description, !description.isEmpty {
+                                Text(description)
+                                    .font(.footnote)
+                                    .foregroundStyle(Color.strideInkSecondary)
+                                    .lineLimit(4)
+                            }
                         }
                     }
-                    .padding(10)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Color.strideWarningFill.opacity(0.85))
-                    .clipShape(RoundedRectangle(cornerRadius: AppTheme.Corner.chip, style: .continuous))
                 }
             }
         }
         .padding(AppTheme.Spacing.cardPadding)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .strideCard(strokeOpacity: 0.14, shadowOpacity: 0.08)
+        .strideCard(strokeOpacity: 0.12)
     }
 }

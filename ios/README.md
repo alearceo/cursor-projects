@@ -19,7 +19,8 @@ Native SwiftUI app for runner-focused conditions: weather, air quality, NWS aler
 ## App icon
 
 - Single **1024×1024** PNG: `StrideCheck/Assets.xcassets/AppIcon.appiconset/AppIcon.png` (`Contents.json` uses **universal** idiom — Xcode 15+).
-- **Mark**: opaque **ink** background with **chartreuse** route / check motif, aligned with in-app `AppTheme` accents; no transparency in the master so App Store validation stays straightforward.
+- **Mark**: near-black `#0C0C0F` background, **electric amber `#F5B700`** diamond / rhombus outline with a single horizontal pace-line through the center — reads as a race checkpoint or timing gate at small sizes.
+- No transparency in the master so App Store validation stays straightforward.
 - If a wider master is produced first, **center-crop to square** then export **1024×1024** (no letterboxing required when the asset is already square).
 
 ## Project layout

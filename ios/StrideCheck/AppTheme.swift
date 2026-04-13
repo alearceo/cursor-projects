@@ -1,171 +1,182 @@
 import SwiftUI
 import UIKit
 
-// MARK: - Brand palette (editorial athletic)
+// MARK: - Brand palette (race telemetry / instrument panel)
 
-/// Central design tokens and reusable chrome. Uses dynamic `UIColor` so light/dark stay coherent.
+/// Central design tokens and reusable chrome. Dynamic UIColor keeps light/dark coherent.
 enum AppTheme {
 
     enum Spacing {
         static let screenHorizontal: CGFloat = 20
-        static let section: CGFloat = 20
-        static let cardPadding: CGFloat = 18
+        static let section: CGFloat = 16
+        static let cardPadding: CGFloat = 16
         static let tight: CGFloat = 10
     }
 
     enum Corner {
-        static let card: CGFloat = 20
-        static let pill: CGFloat = 12
-        static let chip: CGFloat = 10
+        static let card: CGFloat = 12
+        static let pill: CGFloat = 8
+        static let chip: CGFloat = 6
     }
 
-    /// Chartreuse-lime accent (not stock teal).
-    static let accent = Color(red: 0.72, green: 0.93, blue: 0.22)
-    static let accentMuted = Color(red: 0.72, green: 0.93, blue: 0.22).opacity(0.35)
+    /// Electric amber — the sole accent; used for CTAs, score ring, tab tint.
+    static let accent = Color(red: 0.961, green: 0.718, blue: 0.0)
+    static let accentMuted = Color(red: 0.961, green: 0.718, blue: 0.0).opacity(0.25)
 }
+
+// MARK: - Semantic palette
 
 extension Color {
 
-    /// Warm paper (light) / deep ink (dark) canvas.
+    /// Near-black (dark) / cool off-white (light) page canvas.
     static var strideCanvas: Color {
         Color(uiColor: UIColor { tc in
-            if tc.userInterfaceStyle == .dark {
-                return UIColor(red: 0.06, green: 0.08, blue: 0.12, alpha: 1)
-            }
-            return UIColor(red: 0.96, green: 0.93, blue: 0.88, alpha: 1)
+            tc.userInterfaceStyle == .dark
+                ? UIColor(red: 0.047, green: 0.047, blue: 0.059, alpha: 1)   // #0C0C0F
+                : UIColor(red: 0.949, green: 0.941, blue: 0.922, alpha: 1)   // #F2F0EB
         })
     }
 
-    /// Elevated card surface.
+    /// Card surface.
     static var strideSurface: Color {
         Color(uiColor: UIColor { tc in
-            if tc.userInterfaceStyle == .dark {
-                return UIColor(red: 0.11, green: 0.13, blue: 0.19, alpha: 1)
-            }
-            return UIColor(red: 1.0, green: 0.99, blue: 0.96, alpha: 0.94)
+            tc.userInterfaceStyle == .dark
+                ? UIColor(red: 0.078, green: 0.078, blue: 0.094, alpha: 1)   // #141418
+                : UIColor(red: 1.0,   green: 1.0,   blue: 1.0,   alpha: 1)
         })
     }
 
-    /// Secondary blocks inside a card.
+    /// Nested blocks within a card (hourly chips, inner rows).
     static var strideSurfaceSecondary: Color {
         Color(uiColor: UIColor { tc in
-            if tc.userInterfaceStyle == .dark {
-                return UIColor(red: 0.14, green: 0.16, blue: 0.22, alpha: 1)
-            }
-            return UIColor(red: 0.94, green: 0.92, blue: 0.88, alpha: 1)
+            tc.userInterfaceStyle == .dark
+                ? UIColor(red: 0.110, green: 0.110, blue: 0.133, alpha: 1)   // #1C1C22
+                : UIColor(red: 0.929, green: 0.922, blue: 0.902, alpha: 1)   // #EDEBE6
         })
     }
 
+    /// Primary body text / icons.
     static var strideInk: Color {
         Color(uiColor: UIColor { tc in
-            if tc.userInterfaceStyle == .dark {
-                return UIColor(white: 0.94, alpha: 1)
-            }
-            return UIColor(red: 0.12, green: 0.11, blue: 0.14, alpha: 1)
+            tc.userInterfaceStyle == .dark
+                ? UIColor(red: 0.929, green: 0.929, blue: 0.914, alpha: 1)   // #EDEDE9
+                : UIColor(red: 0.094, green: 0.086, blue: 0.094, alpha: 1)   // #181618
         })
     }
 
+    /// Secondary labels, captions.
     static var strideInkSecondary: Color {
         Color(uiColor: UIColor { tc in
-            if tc.userInterfaceStyle == .dark {
-                return UIColor(white: 0.68, alpha: 1)
-            }
-            return UIColor(red: 0.38, green: 0.36, blue: 0.4, alpha: 1)
+            tc.userInterfaceStyle == .dark
+                ? UIColor(red: 0.533, green: 0.533, blue: 0.596, alpha: 1)   // #888898
+                : UIColor(red: 0.369, green: 0.361, blue: 0.392, alpha: 1)   // #5E5C64
         })
     }
 
+    /// Warning / hint banners (amber-tinted).
     static var strideWarningFill: Color {
         Color(uiColor: UIColor { tc in
-            if tc.userInterfaceStyle == .dark {
-                return UIColor(red: 0.95, green: 0.55, blue: 0.12, alpha: 0.18)
-            }
-            return UIColor(red: 0.98, green: 0.72, blue: 0.28, alpha: 0.22)
+            tc.userInterfaceStyle == .dark
+                ? UIColor(red: 0.961, green: 0.718, blue: 0.0, alpha: 0.18)
+                : UIColor(red: 0.961, green: 0.718, blue: 0.0, alpha: 0.15)
         })
     }
 
+    /// Error banners.
     static var strideDangerFill: Color {
         Color(uiColor: UIColor { tc in
-            if tc.userInterfaceStyle == .dark {
-                return UIColor(red: 0.95, green: 0.28, blue: 0.32, alpha: 0.2)
-            }
-            return UIColor(red: 0.95, green: 0.32, blue: 0.35, alpha: 0.14)
+            tc.userInterfaceStyle == .dark
+                ? UIColor(red: 0.95, green: 0.28, blue: 0.32, alpha: 0.18)
+                : UIColor(red: 0.95, green: 0.32, blue: 0.35, alpha: 0.12)
         })
     }
 
+    /// Offline / info notices.
     static var strideInfoFill: Color {
         Color(uiColor: UIColor { tc in
-            if tc.userInterfaceStyle == .dark {
-                return UIColor(red: 0.2, green: 0.45, blue: 0.95, alpha: 0.22)
-            }
-            return UIColor(red: 0.2, green: 0.45, blue: 0.95, alpha: 0.1)
+            tc.userInterfaceStyle == .dark
+                ? UIColor(red: 0.961, green: 0.718, blue: 0.0, alpha: 0.12)
+                : UIColor(red: 0.961, green: 0.718, blue: 0.0, alpha: 0.08)
         })
     }
 
+    /// Route awareness card background tint.
     static var strideRouteAwarenessTint: Color {
         Color(uiColor: UIColor { tc in
-            if tc.userInterfaceStyle == .dark {
-                return UIColor(red: 0.55, green: 0.48, blue: 0.98, alpha: 0.22)
-            }
-            return UIColor(red: 0.45, green: 0.4, blue: 0.95, alpha: 0.12)
+            tc.userInterfaceStyle == .dark
+                ? UIColor(red: 0.2, green: 0.3, blue: 0.9, alpha: 0.20)
+                : UIColor(red: 0.2, green: 0.35, blue: 0.9, alpha: 0.10)
         })
     }
 }
 
-// MARK: - Typography (SF Rounded — add bundled fonts + UIAppFonts later if desired)
+// MARK: - Typography (instrument-grade — no SF Rounded)
 
 enum StrideFont {
-    static var heroTitle: Font { .system(size: 34, weight: .heavy, design: .rounded) }
-    static var brandSubtitle: Font { .system(.subheadline, design: .rounded).weight(.medium) }
-    static var sectionTitle: Font { .system(.headline, design: .rounded).weight(.semibold) }
-    static var cardTitle: Font { .system(.subheadline, design: .rounded).weight(.semibold) }
-    static func scoreLarge(_ points: CGFloat) -> Font { .system(size: points, weight: .bold, design: .rounded) }
+    /// App title / brand header — condensed black.
+    static var heroTitle: Font {
+        .system(size: 32, weight: .black)
+    }
+    static var brandSubtitle: Font {
+        .system(.subheadline, design: .default).weight(.regular)
+    }
+    static var sectionTitle: Font {
+        .system(.headline, design: .default).weight(.semibold)
+    }
+    static var cardTitle: Font {
+        .system(.subheadline, design: .default).weight(.medium)
+    }
+    /// Monospaced for all numeric score displays.
+    static func scoreLarge(_ points: CGFloat) -> Font {
+        .system(size: points, weight: .heavy, design: .monospaced)
+    }
+    /// Monospaced for data-table value cells.
+    static var dataValue: Font {
+        .system(.subheadline, design: .monospaced).weight(.semibold)
+    }
 }
 
-// MARK: - Mesh-style background (iOS 17–safe linear stack)
+// MARK: - Dot-grid background (telemetry graph paper)
 
-struct StrideMeshBackground: View {
+struct StrideTelemetryBackground: View {
+    @Environment(\.colorScheme) private var scheme
+
     var body: some View {
         ZStack {
             Color.strideCanvas
             GeometryReader { geo in
-                let w = geo.size.width
-                let h = geo.size.height
-                ZStack {
-                    LinearGradient(
-                        colors: [
-                            AppTheme.accent.opacity(0.14),
-                            Color.clear
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: UnitPoint(x: 0.85, y: 0.45)
-                    )
-                    LinearGradient(
-                        colors: [
-                            Color(red: 0.25, green: 0.55, blue: 0.95).opacity(0.12),
-                            Color.clear
-                        ],
-                        startPoint: .topTrailing,
-                        endPoint: UnitPoint(x: 0.15, y: 0.55)
-                    )
-                    RadialGradient(
-                        colors: [Color.white.opacity(0.07), Color.clear],
-                        center: UnitPoint(x: 0.2, y: 0.85),
-                        startRadius: 0,
-                        endRadius: min(w, h) * 0.55
-                    )
+                Canvas { ctx, size in
+                    let spacing: CGFloat = 18
+                    let dotRadius: CGFloat = 0.9
+                    let opacity: Double = scheme == .dark ? 0.06 : 0.08
+                    let dotColor = Color.strideInk.opacity(opacity)
+                    var col = spacing
+                    while col < size.width {
+                        var row = spacing
+                        while row < size.height {
+                            let rect = CGRect(
+                                x: col - dotRadius,
+                                y: row - dotRadius,
+                                width: dotRadius * 2,
+                                height: dotRadius * 2
+                            )
+                            ctx.fill(Path(ellipseIn: rect), with: .color(dotColor))
+                            row += spacing
+                        }
+                        col += spacing
+                    }
                 }
-                .frame(width: w, height: h)
+                .frame(width: geo.size.width, height: geo.size.height)
             }
         }
         .ignoresSafeArea()
     }
 }
 
-// MARK: - Card chrome
+// MARK: - Instrument-panel card
 
-private struct StrideCardModifier: ViewModifier {
-    var strokeOpacity: Double = 0.22
-    var shadowOpacity: Double = 0.12
+private struct StrideInstrumentCardModifier: ViewModifier {
+    var strokeOpacity: Double = 0.10
 
     func body(content: Content) -> some View {
         content
@@ -175,20 +186,40 @@ private struct StrideCardModifier: ViewModifier {
                 RoundedRectangle(cornerRadius: AppTheme.Corner.card, style: .continuous)
                     .strokeBorder(Color.strideInk.opacity(strokeOpacity), lineWidth: 1)
             )
-            .shadow(color: Color.black.opacity(shadowOpacity), radius: 14, y: 6)
     }
 }
 
 extension View {
-    /// Editorial card: elevated surface, hairline border, soft shadow.
-    func strideCard(strokeOpacity: Double = 0.22, shadowOpacity: Double = 0.12) -> some View {
-        modifier(StrideCardModifier(strokeOpacity: strokeOpacity, shadowOpacity: shadowOpacity))
+    /// Instrument-panel card: flat surface, hairline border, sharp corners, no shadow.
+    func strideCard(strokeOpacity: Double = 0.10, shadowOpacity: Double = 0) -> some View {
+        modifier(StrideInstrumentCardModifier(strokeOpacity: strokeOpacity))
     }
 
-    /// List / form screens pushed from Conditions: hide default list background and paint mesh.
+    /// List / form screens: hide default List background, apply dot-grid canvas.
     func strideListScreenChrome() -> some View {
         scrollContentBackground(.hidden)
-            .background(StrideMeshBackground())
+            .background(StrideTelemetryBackground())
+    }
+}
+
+// MARK: - Left-bar banner (log-terminal style)
+
+/// Inline banner with a colored left bar — no filled rounded rectangle.
+struct StrideLeftBarBanner<Content: View>: View {
+    var barColor: Color
+    @ViewBuilder var content: () -> Content
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Rectangle()
+                .fill(barColor)
+                .frame(width: 3)
+                .clipShape(Capsule())
+            content()
+            Spacer(minLength: 0)
+        }
+        .padding(.vertical, 12)
+        .padding(.trailing, 12)
     }
 }
 
@@ -198,13 +229,13 @@ enum StrideCheckAppearance {
     static func configureTabBarAccent() {
         let appearance = UITabBarAppearance()
         appearance.configureWithDefaultBackground()
-        let lime = UIColor(red: 0.72, green: 0.93, blue: 0.22, alpha: 1)
-        appearance.stackedLayoutAppearance.selected.iconColor = lime
-        appearance.stackedLayoutAppearance.selected.titleTextAttributes = [.foregroundColor: lime]
-        appearance.inlineLayoutAppearance.selected.iconColor = lime
-        appearance.inlineLayoutAppearance.selected.titleTextAttributes = [.foregroundColor: lime]
-        appearance.compactInlineLayoutAppearance.selected.iconColor = lime
-        appearance.compactInlineLayoutAppearance.selected.titleTextAttributes = [.foregroundColor: lime]
+        let amber = UIColor(red: 0.961, green: 0.718, blue: 0.0, alpha: 1)
+        appearance.stackedLayoutAppearance.selected.iconColor = amber
+        appearance.stackedLayoutAppearance.selected.titleTextAttributes = [.foregroundColor: amber]
+        appearance.inlineLayoutAppearance.selected.iconColor = amber
+        appearance.inlineLayoutAppearance.selected.titleTextAttributes = [.foregroundColor: amber]
+        appearance.compactInlineLayoutAppearance.selected.iconColor = amber
+        appearance.compactInlineLayoutAppearance.selected.titleTextAttributes = [.foregroundColor: amber]
         UITabBar.appearance().standardAppearance = appearance
         UITabBar.appearance().scrollEdgeAppearance = appearance
     }

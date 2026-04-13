@@ -236,77 +236,78 @@ struct RouteAnd511View: View {
     }
 
     private var routeSuggestionCard: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("Suggested routes (beta)")
-                .font(.subheadline.weight(.semibold))
-            Text(workoutIntent.summary)
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-            Picker("Workout type", selection: $workoutIntent) {
-                ForEach(WorkoutRouteIntent.allCases) { intent in
-                    Text(intent.displayTitle).tag(intent)
-                }
-            }
-            .pickerStyle(.segmented)
-            Button {
-                Task { await loadRouteSuggestions() }
-            } label: {
-                HStack {
-                    if isLoadingSuggestions {
-                        ProgressView()
-                            .controlSize(.small)
-                    }
-                    Text("Find routes near here")
-                }
-                .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.borderedProminent)
-            .tint(AppTheme.accent)
-            .disabled(coordinate == nil || isLoadingSuggestions)
-            Text("Uses Apple walking directions and open elevation data. Not turn-by-turn navigation — verify roads and traffic yourself.")
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-            if let suggestionError {
-                Text(suggestionError)
-                    .font(.caption)
-                    .foregroundStyle(.red)
-            }
-            if suggestionRuns.isEmpty, !isLoadingSuggestions, suggestionError == nil {
-                Text("Choose a workout type, then find routes.")
+        HStack(alignment: .top, spacing: 0) {
+            Rectangle()
+                .fill(AppTheme.accent)
+                .frame(width: 3)
+                .clipShape(Capsule())
+                .padding(.vertical, 14)
+            VStack(alignment: .leading, spacing: 10) {
+                Text("Suggested routes (beta)")
+                    .font(.subheadline.weight(.semibold))
+                Text(workoutIntent.summary)
                     .font(.caption2)
-                    .foregroundStyle(.tertiary)
-            }
-            ForEach(suggestionRuns) { run in
-                Button {
-                    selectedSuggestionId = run.id
-                } label: {
-                    HStack(alignment: .top, spacing: 10) {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("\(run.compassLabel) · \(run.distanceKmString)")
-                                .font(.subheadline.weight(.semibold))
-                                .foregroundStyle(.primary)
-                            Text(detailLine(for: run))
-                                .font(.caption2)
-                                .foregroundStyle(.secondary)
-                        }
-                        Spacer(minLength: 0)
-                        if selectedSuggestionId == run.id {
-                            Image(systemName: "checkmark.circle.fill")
-                                .foregroundStyle(.green)
-                        }
+                    .foregroundStyle(.secondary)
+                Picker("Workout type", selection: $workoutIntent) {
+                    ForEach(WorkoutRouteIntent.allCases) { intent in
+                        Text(intent.displayTitle).tag(intent)
                     }
                 }
-                .buttonStyle(.plain)
+                .pickerStyle(.segmented)
+                Button {
+                    Task { await loadRouteSuggestions() }
+                } label: {
+                    HStack {
+                        if isLoadingSuggestions {
+                            ProgressView()
+                                .controlSize(.small)
+                        }
+                        Text("Find routes near here")
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(AppTheme.accent)
+                .disabled(coordinate == nil || isLoadingSuggestions)
+                Text("Uses Apple walking directions and open elevation data. Not turn-by-turn navigation — verify roads and traffic yourself.")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                if let suggestionError {
+                    Text(suggestionError)
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                }
+                if suggestionRuns.isEmpty, !isLoadingSuggestions, suggestionError == nil {
+                    Text("Choose a workout type, then find routes.")
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                }
+                ForEach(suggestionRuns) { run in
+                    Button {
+                        selectedSuggestionId = run.id
+                    } label: {
+                        HStack(alignment: .top, spacing: 10) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("\(run.compassLabel) · \(run.distanceKmString)")
+                                    .font(.subheadline.weight(.semibold))
+                                    .foregroundStyle(.primary)
+                                Text(detailLine(for: run))
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                            }
+                            Spacer(minLength: 0)
+                            if selectedSuggestionId == run.id {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .foregroundStyle(.green)
+                            }
+                        }
+                    }
+                    .buttonStyle(.plain)
+                }
             }
+            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .padding(14)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.strideSurfaceSecondary)
-        .clipShape(RoundedRectangle(cornerRadius: AppTheme.Corner.pill, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: AppTheme.Corner.pill, style: .continuous)
-                .strokeBorder(Color.strideInk.opacity(0.1), lineWidth: 1)
-        )
     }
 
     private func detailLine(for run: SuggestedRouteRun) -> String {
@@ -333,50 +334,49 @@ struct RouteAnd511View: View {
     }
 
     private var stravaCard: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            NavigationLink {
-                MapDataSourcesView()
-            } label: {
-                HStack(alignment: .center, spacing: 12) {
-                    Image(systemName: "map.fill")
-                        .font(.title3)
-                        .foregroundStyle(.orange)
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Map data sources")
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(.primary)
-                        Text(stravaCardSubtitle)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+        HStack(alignment: .top, spacing: 0) {
+            Rectangle()
+                .fill(AppTheme.accent)
+                .frame(width: 3)
+                .clipShape(Capsule())
+                .padding(.vertical, 14)
+            VStack(alignment: .leading, spacing: 10) {
+                NavigationLink {
+                    MapDataSourcesView()
+                } label: {
+                    HStack(alignment: .center, spacing: 12) {
+                        Image(systemName: "map.fill")
+                            .font(.title3)
+                            .foregroundStyle(AppTheme.accent)
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Map data sources")
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(.primary)
+                            Text(stravaCardSubtitle)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        Spacer(minLength: 0)
+                        Image(systemName: "chevron.right")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(.tertiary)
                     }
-                    Spacer(minLength: 0)
-                    Image(systemName: "chevron.right")
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(.tertiary)
                 }
-            }
-            .buttonStyle(.plain)
-            if showStravaRoutesOnMap, stravaLink.isConnected {
-                HStack(spacing: 10) {
+                .buttonStyle(.plain)
+                if showStravaRoutesOnMap, stravaLink.isConnected {
                     Button("Refresh routes") {
                         stravaLink.requestMapDataRefresh()
                     }
                     .buttonStyle(.borderedProminent)
-                    .tint(.orange)
+                    .tint(AppTheme.accent)
+                    Text(stravaPolylines.isEmpty ? "No polylines yet — try Refresh, or check that recent activities include GPS." : "Purple lines are recent Strava activities (not navigation routes).")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
                 }
-                Text(stravaPolylines.isEmpty ? "No polylines yet — try Refresh, or check that recent activities include GPS." : "Purple lines are recent Strava activities (not navigation routes).")
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
             }
+            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .padding(14)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.strideSurfaceSecondary)
-        .clipShape(RoundedRectangle(cornerRadius: AppTheme.Corner.pill, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: AppTheme.Corner.pill, style: .continuous)
-                .strokeBorder(Color.strideInk.opacity(0.1), lineWidth: 1)
-        )
     }
 
     private var stravaCardSubtitle: String {
@@ -435,7 +435,7 @@ struct RouteAnd511View: View {
             )
         } else {
             ZStack {
-                Color.strideCanvas
+                StrideTelemetryBackground()
                 ContentUnavailableView(
                     "Map needs a location",
                     systemImage: "map",
